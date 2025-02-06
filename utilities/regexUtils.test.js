@@ -28,7 +28,6 @@ describe("Regex Utils", () => {
     ];
 
     for (const email of invalidEmails) {
-      console.log(email);
       expect(emailRegex.test(email)).toBe(false);
     }
   });
