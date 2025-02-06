@@ -1,35 +1,37 @@
 import { jest } from "@jest/globals";
-import { registerController } from "./authController";
+import { registerController, loginController } from "./authController";
 import userModel from "../models/userModel";
-import { hashPassword } from "../helpers/authHelper";
-jest.mock("../models/userModel.js");
-jest.mock("../helpers/authHelper.js");
+import { hashPassword, comparePassword } from "../helpers/authHelper";
+import JWT from "jsonwebtoken";
+
+jest.mock("../models/userModel");
+jest.mock("../helpers/authHelper");
+jest.mock("jsonwebtoken");
 
 describe("Register Controller Test", () => {
   let req, res;
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = {
+      body: {
+        name: "John Doe",
+        email: "example@gmail.com",
+        password: "password",
+        phone: "91234567",
+        address: "Example Street",
+        answer: "Example Answer",
+      },
+    };
+
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+  });
+
   describe("Given valid registration details", () => {
-    const password = "password";
     const expectedHashedPassword = "hashedPassword";
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      req = {
-        body: {
-          name: "John Doe",
-          email: "example@gmail.com",
-          password: password,
-          phone: "91234567",
-          address: "Example Street",
-          answer: "Example Answer",
-        },
-      };
-
-      res = {
-        status: jest.fn().mockReturnThis(),
-        send: jest.fn(),
-      };
-    });
 
     it("should save new user to database", async () => {
       const expectedUser = {
@@ -95,20 +97,6 @@ describe("Register Controller Test", () => {
   });
 
   describe("Given invalid registration details", () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
-      req = {
-        body: {
-          name: "John Doe",
-          email: "example@gmail.com",
-          password: "password",
-          phone: "91234567",
-          address: "Example Street",
-          answer: "Example Answer",
-        },
-      };
-    });
-
     it("should not save new user if empty name", async () => {
       req.body.name = "";
 
@@ -207,6 +195,163 @@ describe("Register Controller Test", () => {
       });
       expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe("Login Controller Test", () => {
+  let req, res;
+
+  const expectedUser = {
+    _id: "id",
+    name: "John Doe",
+    email: "example@gmail.com",
+    password: "hashedPassword",
+    phone: "91234567",
+    address: "Example Street",
+    role: "user",
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = {
+      body: {
+        email: expectedUser.email,
+        password: "password",
+      },
+    };
+
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+  });
+
+  describe("Given valid login details", () => {
+    const expectedToken = "token";
+
+    it("should login user given valid account and token", async () => {
+      userModel.findOne = jest.fn().mockResolvedValue(expectedUser);
+      comparePassword.mockResolvedValue(true);
+      JWT.sign.mockResolvedValue(expectedToken);
+
+      await loginController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({
+        email: expectedUser.email,
+      });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        expectedUser.password
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "login successfully",
+        user: {
+          _id: expectedUser._id,
+          name: expectedUser.name,
+          email: expectedUser.email,
+          phone: expectedUser.phone,
+          address: expectedUser.address,
+          role: expectedUser.role,
+        },
+        token: expectedToken,
+      });
+    });
+
+    it("should not login user if user not found", async () => {
+      userModel.findOne = jest.fn().mockResolvedValue(null);
+
+      await loginController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({
+        email: expectedUser.email,
+      });
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: "Email is not registerd",
+      });
+    });
+
+    it("should not login user if error", async () => {
+      const expectedError = new Error("error");
+
+      userModel.findOne = jest.fn().mockRejectedValue(expectedError);
+
+      await loginController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({
+        email: req.body.email,
+      });
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: "Error in login",
+        error: expectedError,
+      });
+    });
+  });
+
+  describe("Given invalid login details", () => {
+    it("should not login user if invalid email", async () => {
+      req.body.email = "";
+
+      await loginController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: "Invalid email or password",
+      });
+    });
+
+    it("should not login user if empty password", async () => {
+      req.body.password = "";
+
+      await loginController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: "Invalid email or password",
+      });
+    });
+
+    it("should not login user if user does not exist", async () => {
+      req.body.email = "nonexistent@gmail.com";
+
+      userModel.findOne = jest.fn().mockResolvedValue(null);
+
+      await loginController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: "Email is not registerd",
+      });
+    });
+
+    it("should not login user if password does not match", async () => {
+      userModel.findOne = jest.fn().mockResolvedValue(expectedUser);
+      comparePassword.mockResolvedValue(false);
+
+      await loginController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({
+        email: expectedUser.email,
+      });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        expectedUser.password
+      );
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: "Invalid Password",
+      });
     });
   });
 });
