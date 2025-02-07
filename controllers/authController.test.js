@@ -33,7 +33,7 @@ describe("Register Controller Test", () => {
   describe("Given valid registration details", () => {
     const expectedHashedPassword = "hashedPassword";
 
-    it("should save new user to database", async () => {
+    it("should save new user to database and return 201", async () => {
       const expectedUser = {
         ...req.body,
         password: expectedHashedPassword,
@@ -56,7 +56,7 @@ describe("Register Controller Test", () => {
       });
     });
 
-    it("should not save user to database if existing email", async () => {
+    it("should not save user to database and return 200 if existing email", async () => {
       const expectedUser = {
         ...req.body,
         password: expectedHashedPassword,
@@ -76,7 +76,7 @@ describe("Register Controller Test", () => {
       });
     });
 
-    it("should not save user if error", async () => {
+    it("should not save user and return 500 if error", async () => {
       const expectedError = new Error("error");
 
       userModel.findOne = jest.fn().mockResolvedValue(false);
