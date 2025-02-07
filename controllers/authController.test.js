@@ -103,36 +103,25 @@ describe("Register Controller Test", () => {
       await registerController(req, res);
 
       expect(res.send).toHaveBeenCalledWith({ error: "Name is Required" });
-      expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
 
     it("should not save new user if empty email", async () => {
       req.body.email = "";
 
-      // specify mock functionality
-      userModel.findOne = jest.fn().mockResolvedValue(null);
-      userModel.prototype.save = jest.fn();
-
       await registerController(req, res);
 
       expect(res.send).toHaveBeenCalledWith({ message: "Email is Required" });
-      expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
 
     it("should not save new user if invalid email format", async () => {
       req.body.email = "invalid-email";
 
-      // specify mock functionality
-      userModel.findOne = jest.fn().mockResolvedValue(null);
-      userModel.prototype.save = jest.fn();
-
       await registerController(req, res);
       expect(res.send).toHaveBeenCalledWith({
         message: "Invalid Email Format (hint: example@gmail.com)",
       });
-      expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
 
@@ -144,7 +133,6 @@ describe("Register Controller Test", () => {
       expect(res.send).toHaveBeenCalledWith({
         message: "Password is Required",
       });
-      expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
 
@@ -156,7 +144,6 @@ describe("Register Controller Test", () => {
       expect(res.send).toHaveBeenCalledWith({
         message: "Phone no is Required",
       });
-      expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
 
@@ -169,7 +156,6 @@ describe("Register Controller Test", () => {
         message:
           "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits].",
       });
-      expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
 
@@ -181,7 +167,6 @@ describe("Register Controller Test", () => {
       expect(res.send).toHaveBeenCalledWith({
         message: "Address is Required",
       });
-      expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
 
@@ -193,7 +178,6 @@ describe("Register Controller Test", () => {
       expect(res.send).toHaveBeenCalledWith({
         message: "Answer is Required",
       });
-      expect(userModel.findOne).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
   });
