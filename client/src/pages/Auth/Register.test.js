@@ -157,6 +157,29 @@ describe("Register Component", () => {
     expect(answerInput.value).toBe("");
   });
 
+  it("should allow typing in the input fields", () => {
+    const {
+      getByPlaceholderText,
+      nameInput,
+      emailInput,
+      passwordInput,
+      phoneInput,
+      addressInput,
+      dobInput,
+      answerInput,
+    } = renderPage();
+
+    fillForm(getByPlaceholderText, defaultRegisterUser);
+
+    expect(nameInput.value).toBe(defaultRegisterUser.name);
+    expect(emailInput.value).toBe(defaultRegisterUser.email);
+    expect(passwordInput.value).toBe(defaultRegisterUser.password);
+    expect(phoneInput.value).toBe(defaultRegisterUser.phone);
+    expect(addressInput.value).toBe(defaultRegisterUser.address);
+    expect(dobInput.value).toBe(defaultRegisterUser.dob);
+    expect(answerInput.value).toBe(defaultRegisterUser.answer);
+  });
+
   describe("Given valid registration details", () => {
     it("should register the user successfully", async () => {
       axios.post.mockResolvedValueOnce({ data: { success: true } });
@@ -263,7 +286,7 @@ describe("Register Component", () => {
     });
 
     it("should prevent form submission if dob is missing", async () => {
-      const { getByText, getByPlaceholderText, dobInput} = renderPage();
+      const { getByText, getByPlaceholderText, dobInput } = renderPage();
 
       fillForm(getByPlaceholderText, { ...defaultRegisterUser, dob: "" });
 
