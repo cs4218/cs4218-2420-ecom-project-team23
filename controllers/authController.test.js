@@ -214,7 +214,7 @@ describe("Login Controller Test", () => {
   describe("Given valid login details", () => {
     const expectedToken = "token";
 
-    it("should login user given valid account and token", async () => {
+    it("should login user and return 200 and a token", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(expectedUser);
       comparePassword.mockResolvedValue(true);
       JWT.sign.mockResolvedValue(expectedToken);
@@ -244,7 +244,7 @@ describe("Login Controller Test", () => {
       });
     });
 
-    it("should not login user if user not found", async () => {
+    it("should not login user and return 404 if user not found", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(null);
 
       await loginController(req, res);
@@ -259,7 +259,7 @@ describe("Login Controller Test", () => {
       });
     });
 
-    it("should not login user if error", async () => {
+    it("should not login user and return 500 if error", async () => {
       const expectedError = new Error("error");
 
       userModel.findOne = jest.fn().mockRejectedValue(expectedError);
@@ -279,7 +279,7 @@ describe("Login Controller Test", () => {
   });
 
   describe("Given invalid login details", () => {
-    it("should not login user if invalid email", async () => {
+    it("should not login user and return 404 if invalid email", async () => {
       req.body.email = "";
 
       await loginController(req, res);
@@ -291,7 +291,7 @@ describe("Login Controller Test", () => {
       });
     });
 
-    it("should not login user if empty password", async () => {
+    it("should not login user and return 404 if empty password", async () => {
       req.body.password = "";
 
       await loginController(req, res);
@@ -303,7 +303,7 @@ describe("Login Controller Test", () => {
       });
     });
 
-    it("should not login user if user does not exist", async () => {
+    it("should not login user and return 404 if user does not exist", async () => {
       req.body.email = "nonexistent@gmail.com";
 
       userModel.findOne = jest.fn().mockResolvedValue(null);
@@ -317,7 +317,7 @@ describe("Login Controller Test", () => {
       });
     });
 
-    it("should not login user if password does not match", async () => {
+    it("should not login user and return 200 if password does not match", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(expectedUser);
       comparePassword.mockResolvedValue(false);
 
