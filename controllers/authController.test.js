@@ -259,7 +259,7 @@ describe("Login Controller Test", () => {
       });
     });
 
-    it("should not login user and return 500 if error", async () => {
+    it("should return 500 if error", async () => {
       const expectedError = new Error("error");
 
       userModel.findOne = jest.fn().mockRejectedValue(expectedError);
@@ -339,3 +339,4 @@ describe("Login Controller Test", () => {
     });
   });
 });
+
