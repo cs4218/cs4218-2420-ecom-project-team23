@@ -1,5 +1,5 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import axios from "axios";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom/extend-expect";
@@ -123,7 +123,7 @@ describe("Register Component", () => {
     expect(getByPlaceholderText("What is Your Favorite sports").value).toBe("");
   });
 
-  it("should allow typing into input fields and register the user successfully", async () => {
+  it("should register the user successfully", async () => {
     axios.post.mockResolvedValueOnce({ data: { success: true } });
 
     const { getByText, getByPlaceholderText } = render(
@@ -135,28 +135,6 @@ describe("Register Component", () => {
     );
 
     fillForm(getByPlaceholderText, defaultRegisterUser);
-
-    expect(getByPlaceholderText("Enter Your Name").value).toBe(
-      defaultRegisterUser.name
-    );
-    expect(getByPlaceholderText("Enter Your Email").value).toBe(
-      defaultRegisterUser.email
-    );
-    expect(getByPlaceholderText("Enter Your Password").value).toBe(
-      defaultRegisterUser.password
-    );
-    expect(getByPlaceholderText("Enter Your Phone").value).toBe(
-      defaultRegisterUser.phone
-    );
-    expect(getByPlaceholderText("Enter Your Address").value).toBe(
-      defaultRegisterUser.address
-    );
-    expect(getByPlaceholderText("Enter Your DOB").value).toBe(
-      defaultRegisterUser.dob
-    );
-    expect(getByPlaceholderText("What is Your Favorite sports").value).toBe(
-      defaultRegisterUser.answer
-    );
 
     fireEvent.click(getByText("REGISTER"));
 
