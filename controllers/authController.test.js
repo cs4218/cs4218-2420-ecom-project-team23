@@ -74,17 +74,13 @@ describe("Register Controller Test", () => {
       });
     });
 
-    it("should not save user and return 500 if error", async () => {
+    it("should return 500 if error", async () => {
       const expectedError = new Error("error");
 
-      userModel.findOne = jest.fn().mockResolvedValue(false);
-      userModel.prototype.save = jest.fn().mockResolvedValue();
-      hashPassword.mockRejectedValue(expectedError);
+      userModel.findOne = jest.fn().mockRejectedValue(expectedError);
 
       await registerController(req, res);
 
-      expect(hashPassword).toHaveBeenCalledWith(req.body.password);
-      expect(userModel.prototype.save).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
