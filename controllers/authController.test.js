@@ -3,6 +3,7 @@ import {
   registerController,
   loginController,
   forgotPasswordController,
+  testController,
 } from "./authController";
 import userModel from "../models/userModel";
 import { hashPassword, comparePassword } from "../helpers/authHelper";
@@ -470,5 +471,23 @@ describe("Forget Password Controller Test", () => {
         message: "New Password is required",
       });
     });
+  });
+});
+
+describe("Test Controller Test", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = {};
+    res = {
+      send: jest.fn(),
+    };
+  });
+
+  it("should return 'Protected Routes' if no error", () => {
+    testController(req, res);
+
+    expect(res.send).toHaveBeenCalledWith("Protected Routes");
   });
 });
