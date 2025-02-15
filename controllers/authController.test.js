@@ -55,7 +55,7 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.send).toHaveBeenCalledWith({
         success: true,
-        message: "User Register Successfully",
+        message: "User Registered Successfully",
         user: expectedUser,
       });
     });
@@ -76,7 +76,7 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Already Register please login",
+        message: "Already registered. Please Login",
       });
     });
 
@@ -90,7 +90,7 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Error in Registeration",
+        message: "Error: Failed to Register",
         error: expectedError,
       });
     });
@@ -231,7 +231,7 @@ describe("Login Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: true,
-        message: "login successfully",
+        message: "Login successfully",
         user: {
           _id: expectedUser._id,
           name: expectedUser.name,
@@ -255,7 +255,7 @@ describe("Login Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Email is not registerd",
+        message: "Email is not registered",
       });
     });
 
@@ -272,7 +272,7 @@ describe("Login Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Error in login",
+        message: "Error logging in",
         error: expectedError,
       });
     });
@@ -313,7 +313,7 @@ describe("Login Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Email is not registerd",
+        message: "Email is not registered",
       });
     });
 
