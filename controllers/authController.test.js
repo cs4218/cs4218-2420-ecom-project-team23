@@ -51,7 +51,7 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.send).toHaveBeenCalledWith({
         success: true,
-        message: "User Register Successfully",
+        message: "User Registered Successfully",
         user: expectedUser,
       });
     });
@@ -72,7 +72,7 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Already Register please login",
+        message: "Already registered. Please Login",
       });
     });
 
@@ -86,7 +86,7 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Error in Registeration",
+        message: "Error: Failed to Register",
         error: expectedError,
       });
     });
