@@ -12,7 +12,7 @@ export const registerController = async (req, res) => {
     if (!name) {
       return res.send({ error: "Name is Required" });
     }
-    
+
     if (!email) {
       return res.send({ message: "Email is Required" });
     } else if (!emailRegex.test(email)) {
@@ -46,7 +46,7 @@ export const registerController = async (req, res) => {
     if (exisitingUser) {
       return res.status(200).send({
         success: false,
-        message: "Already Register please login",
+        message: "Already registered. Please Login",
       });
     }
     //register user
@@ -63,14 +63,14 @@ export const registerController = async (req, res) => {
 
     res.status(201).send({
       success: true,
-      message: "User Register Successfully",
+      message: "User Registered Successfully",
       user,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error in Registeration",
+      message: "Error: Failed to Register",
       error,
     });
   }
