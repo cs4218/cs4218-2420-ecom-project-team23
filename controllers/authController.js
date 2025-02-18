@@ -170,9 +170,7 @@ export const forgotPasswordController = async (req, res) => {
 
 //test controller
 export const testController = (req, res) => {
-  try {
-    res.send("Protected Routes");
-  }
+  res.send("Protected Routes");
 };
 
 //update prfole
