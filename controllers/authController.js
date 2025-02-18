@@ -30,7 +30,7 @@ export const registerController = async (req, res) => {
     } else if (!phoneRegex.test(phone)) {
       return res.send({
         message:
-          "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits].",
+          "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits]",
       });
     }
 
@@ -44,9 +44,10 @@ export const registerController = async (req, res) => {
     const exisitingUser = await userModel.findOne({ email });
     //exisiting user
     if (exisitingUser) {
-      return res.status(200).send({
+      return res.status(400).send({
         success: false,
-        message: "Already registered. Please Login",
+        message:
+          "Unable to register. If you already have an account, please log in",
       });
     }
     //register user
@@ -70,7 +71,7 @@ export const registerController = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error: Failed to Register",
+      message: "Error registering. Please try again later",
       error,
     });
   }
@@ -82,7 +83,7 @@ export const loginController = async (req, res) => {
     const { email, password } = req.body;
     //validation
     if (!email || !password) {
-      return res.status(404).send({
+      return res.status(400).send({
         success: false,
         message: "Invalid email or password",
       });
@@ -90,16 +91,16 @@ export const loginController = async (req, res) => {
     //check user
     const user = await userModel.findOne({ email });
     if (!user) {
-      return res.status(404).send({
+      return res.status(400).send({
         success: false,
-        message: "Email is not registered",
+        message: "Invalid email or password",
       });
     }
     const match = await comparePassword(password, user.password);
     if (!match) {
-      return res.status(200).send({
+      return res.status(400).send({
         success: false,
-        message: "Invalid Password",
+        message: "Invalid email or password",
       });
     }
     //token
@@ -123,7 +124,7 @@ export const loginController = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error logging in",
+      message: "Error logging in. Please try again later",
       error,
     });
   }
