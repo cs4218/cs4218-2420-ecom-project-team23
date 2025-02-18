@@ -56,7 +56,7 @@ describe("Register Controller Test", () => {
       });
     });
 
-    it("should not save user to database and return 200 if existing email", async () => {
+    it("should not save user to database and return 400 if existing email", async () => {
       const expectedUser = {
         ...req.body,
         password: expectedHashedPassword,
@@ -69,10 +69,11 @@ describe("Register Controller Test", () => {
       expect(hashPassword).not.toHaveBeenCalled();
       expect(userModel).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Already registered. Please Login",
+        message:
+          "Unable to register. If you already have an account, please log in",
       });
     });
 
@@ -86,7 +87,7 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Error: Failed to Register",
+        message: "Error registering. Please try again later",
         error: expectedError,
       });
     });
@@ -150,7 +151,7 @@ describe("Register Controller Test", () => {
 
       expect(res.send).toHaveBeenCalledWith({
         message:
-          "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits].",
+          "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits]",
       });
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
