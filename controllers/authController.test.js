@@ -70,7 +70,8 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Already registered. Please Login",
+        message:
+          "Unable to register. If you already have an account, please log in.",
       });
     });
 
@@ -84,7 +85,7 @@ describe("Register Controller Test", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Error: Failed to Register",
+        message: "Error: Failed to register. Please try again later.",
         error: expectedError,
       });
     });

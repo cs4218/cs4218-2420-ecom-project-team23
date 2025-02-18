@@ -46,7 +46,8 @@ export const registerController = async (req, res) => {
     if (exisitingUser) {
       return res.status(200).send({
         success: false,
-        message: "Already registered. Please Login",
+        message:
+          "Unable to register. If you already have an account, please log in.",
       });
     }
     //register user
@@ -70,7 +71,7 @@ export const registerController = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error: Failed to Register",
+      message: "Error: Failed to register. Please try again later.",
       error,
     });
   }
