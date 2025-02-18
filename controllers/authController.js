@@ -146,14 +146,14 @@ export const forgotPasswordController = async (req, res) => {
     const user = await userModel.findOne({ email, answer });
     //validation
     if (!user) {
-      return res.status(404).send({
+      return res.status(400).send({
         success: false,
-        message: "Wrong Email Or Answer",
+        message: "Invalid Email Or Answer",
       });
     }
     const hashed = await hashPassword(newPassword);
     await userModel.findByIdAndUpdate(user._id, { password: hashed });
-    res.status(200).send({
+    res.status(201).send({
       success: true,
       message: "Password Reset Successfully",
     });
@@ -161,7 +161,7 @@ export const forgotPasswordController = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Something went wrong",
+      message: "Error resetting password. Please try again later",
       error,
     });
   }
