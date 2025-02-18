@@ -85,7 +85,7 @@ describe("Is Admin Middleware Test", () => {
     expect(next).toHaveBeenCalled();
   });
 
-  it("should not call next if user not admin", async () => {
+  it("should return 401 if user not admin", async () => {
     req.user.role = 0;
 
     userModel.findById.mockResolvedValue(req.user._id);
@@ -101,7 +101,7 @@ describe("Is Admin Middleware Test", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("should log error and not call next if error occurs", async () => {
+  it("should log error and return 500 if internal server error", async () => {
     const consoleSpy = jest.spyOn(console, "log");
     const expectedError = new Error("Admin Middleware Error");
 
@@ -113,7 +113,7 @@ describe("Is Admin Middleware Test", () => {
     expect(next).not.toHaveBeenCalled();
 
     expect(consoleSpy).toHaveBeenCalledWith(expectedError);
-    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({
       success: false,
       error: expectedError,
