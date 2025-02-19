@@ -397,7 +397,7 @@ describe("Forget Password Controller Test", () => {
       });
     });
 
-    it("should not update password and return 400 if user not found", async () => {
+    it("should not update password and return 200 if user not found", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(null);
       userModel.findByIdAndUpdate = jest.fn();
       await forgotPasswordController(req, res);
@@ -407,7 +407,7 @@ describe("Forget Password Controller Test", () => {
         answer: expectedUser.answer,
       });
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid Email Or Answer",
@@ -436,37 +436,37 @@ describe("Forget Password Controller Test", () => {
   });
 
   describe("Given invalid forget password details", () => {
-    it("should not update password and return 400 if empty email", async () => {
+    it("should not update password and return 200 if empty email", async () => {
       req.body.email = "";
 
       await forgotPasswordController(req, res);
 
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         message: "Email is required",
       });
     });
 
-    it("should not update password and return 400 if empty answer", async () => {
+    it("should not update password and return 200 if empty answer", async () => {
       req.body.answer = "";
 
       await forgotPasswordController(req, res);
 
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         message: "Answer is required",
       });
     });
 
-    it("should not update password and return 400 if empty newPassword", async () => {
+    it("should not update password and return 200 if empty newPassword", async () => {
       req.body.newPassword = "";
 
       await forgotPasswordController(req, res);
 
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         message: "New Password is required",
       });
