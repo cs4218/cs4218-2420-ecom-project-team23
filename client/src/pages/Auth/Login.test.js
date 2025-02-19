@@ -1,7 +1,7 @@
 import React from "react";
 import { render, fireEvent, waitFor, screen } from "@testing-library/react";
 import axios from "axios";
-import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { MemoryRouter, Routes, Route, useNavigate } from "react-router-dom";
 import "@testing-library/jest-dom";
 import toast from "react-hot-toast";
 import Login from "./Login";
@@ -9,6 +9,11 @@ import Login from "./Login";
 // Mocking axios.post
 jest.mock("axios");
 jest.mock("react-hot-toast");
+
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: jest.fn().mockReturnValue(jest.fn()),
+}));
 
 jest.mock("../../context/auth", () => ({
   useAuth: jest.fn(() => [null, jest.fn()]), // Mock useAuth hook to return null state and a mock function for setAuth
@@ -98,6 +103,14 @@ describe("Login Component", () => {
 
     expect(emailInput.value).toBe(defaultLoginUser.email);
     expect(passwordInput.value).toBe(defaultLoginUser.password);
+  });
+
+  it("should redirect to forgot password page when clicked", () => {
+    renderPage();
+
+    fireEvent.click(screen.getByText("Forgot Password"));
+
+    expect(useNavigate()).toHaveBeenCalledWith("/forgot-password");
   });
 
   describe("Given valid login details", () => {
