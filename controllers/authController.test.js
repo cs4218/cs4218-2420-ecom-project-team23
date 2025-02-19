@@ -932,20 +932,20 @@ describe("Update Profile Controller Test", () => {
   });
 
   describe("Given Invalid Profile Inputs", () => {
-    it("should return 401 if invalid email", async () => {
+    it("should return 200 if invalid email", async () => {
       req.body.email = "invalid-email";
 
       userModel.findOne = jest.fn().mockResolvedValue(null);
 
       await updateProfileController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         error: "Unauthorized to update. Invalid Email or Password",
       });
     });
 
-    it("should return 401 if invalid password", async () => {
+    it("should return 200 if invalid password", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
       comparePassword.mockResolvedValue(false);
 
@@ -954,13 +954,13 @@ describe("Update Profile Controller Test", () => {
       expect(userModel.findOne).toHaveBeenCalledWith({
         email: defaultUser.email,
       });
-      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         error: "Unauthorized to update. Invalid Email or Password",
       });
     });
 
-    it("should return 401 if invalid new password", async () => {
+    it("should return 200 if invalid new password", async () => {
       req.body.newPassword = "new";
 
       userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
@@ -972,7 +972,7 @@ describe("Update Profile Controller Test", () => {
         email: defaultUser.email,
       });
       expect(comparePassword).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         error: "Password should be at least 6 character long",
       });

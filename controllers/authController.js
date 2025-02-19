@@ -182,7 +182,7 @@ export const updateProfileController = async (req, res) => {
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      return res.status(401).json({
+      return res.status(200).json({
         error: "Unauthorized to update. Invalid Email or Password",
       });
     }
@@ -191,13 +191,13 @@ export const updateProfileController = async (req, res) => {
     const isValidPassword = await comparePassword(password, user.password);
 
     if (!isValidPassword) {
-      return res.status(401).json({
+      return res.status(200).json({
         error: "Unauthorized to update. Invalid Email or Password",
       });
     }
 
     if (newPassword && newPassword.length < 6) {
-      return res.status(401).json({
+      return res.status(200).json({
         error: "Password should be at least 6 character long",
       });
     }
