@@ -62,7 +62,7 @@ describe("Register Controller Test", () => {
       });
     });
 
-    it("should not save user to database and return 400 if existing email", async () => {
+    it("should not save user to database and return 200 if existing email", async () => {
       const expectedUser = {
         ...req.body,
         password: expectedHashedPassword,
@@ -75,7 +75,7 @@ describe("Register Controller Test", () => {
       expect(hashPassword).not.toHaveBeenCalled();
       expect(userModel).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message:
@@ -247,7 +247,7 @@ describe("Login Controller Test", () => {
       });
     });
 
-    it("should not login user and return 400 if user not found", async () => {
+    it("should not login user and return 200 if user not found", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(null);
 
       await loginController(req, res);
@@ -255,7 +255,7 @@ describe("Login Controller Test", () => {
       expect(userModel.findOne).toHaveBeenCalledWith({
         email: expectedUser.email,
       });
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
@@ -282,45 +282,45 @@ describe("Login Controller Test", () => {
   });
 
   describe("Given invalid login details", () => {
-    it("should not login user and return 400 if invalid email", async () => {
+    it("should not login user and return 200 if invalid email", async () => {
       req.body.email = "";
 
       await loginController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
       });
     });
 
-    it("should not login user and return 400 if empty password", async () => {
+    it("should not login user and return 200 if empty password", async () => {
       req.body.password = "";
 
       await loginController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
       });
     });
 
-    it("should not login user and return 400 if user does not exist", async () => {
+    it("should not login user and return 200 if user does not exist", async () => {
       req.body.email = "nonexistent@gmail.com";
 
       userModel.findOne = jest.fn().mockResolvedValue(null);
 
       await loginController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
       });
     });
 
-    it("should not login user and return 400 if password does not match", async () => {
+    it("should not login user and return 200 if password does not match", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(expectedUser);
       comparePassword.mockResolvedValue(false);
 
@@ -334,7 +334,7 @@ describe("Login Controller Test", () => {
         expectedUser.password
       );
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
@@ -399,7 +399,7 @@ describe("Forget Password Controller Test", () => {
       });
     });
 
-    it("should not update password and return 400 if user not found", async () => {
+    it("should not update password and return 200 if user not found", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(null);
       userModel.findByIdAndUpdate = jest.fn();
       await forgotPasswordController(req, res);
@@ -409,7 +409,7 @@ describe("Forget Password Controller Test", () => {
         answer: expectedUser.answer,
       });
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid Email Or Answer",
@@ -438,37 +438,37 @@ describe("Forget Password Controller Test", () => {
   });
 
   describe("Given invalid forget password details", () => {
-    it("should not update password and return 400 if empty email", async () => {
+    it("should not update password and return 200 if empty email", async () => {
       req.body.email = "";
 
       await forgotPasswordController(req, res);
 
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         message: "Email is required",
       });
     });
 
-    it("should not update password and return 400 if empty answer", async () => {
+    it("should not update password and return 200 if empty answer", async () => {
       req.body.answer = "";
 
       await forgotPasswordController(req, res);
 
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         message: "Answer is required",
       });
     });
 
-    it("should not update password and return 400 if empty newPassword", async () => {
+    it("should not update password and return 200 if empty newPassword", async () => {
       req.body.newPassword = "";
 
       await forgotPasswordController(req, res);
 
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         message: "New Password is required",
       });

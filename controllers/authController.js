@@ -41,11 +41,12 @@ export const registerController = async (req, res) => {
     if (!answer) {
       return res.send({ message: "Answer is Required" });
     }
+
     //check user
     const exisitingUser = await userModel.findOne({ email });
     //exisiting user
     if (exisitingUser) {
-      return res.status(400).send({
+      return res.status(200).send({
         success: false,
         message:
           "Unable to register. If you already have an account, please log in",
@@ -84,7 +85,7 @@ export const loginController = async (req, res) => {
     const { email, password } = req.body;
     //validation
     if (!email || !password) {
-      return res.status(400).send({
+      return res.status(200).send({
         success: false,
         message: "Invalid email or password",
       });
@@ -92,14 +93,14 @@ export const loginController = async (req, res) => {
     //check user
     const user = await userModel.findOne({ email });
     if (!user) {
-      return res.status(400).send({
+      return res.status(200).send({
         success: false,
         message: "Invalid email or password",
       });
     }
     const match = await comparePassword(password, user.password);
     if (!match) {
-      return res.status(400).send({
+      return res.status(200).send({
         success: false,
         message: "Invalid email or password",
       });
@@ -136,19 +137,19 @@ export const forgotPasswordController = async (req, res) => {
   try {
     const { email, answer, newPassword } = req.body;
     if (!email) {
-      return res.status(400).send({ message: "Email is required" });
+      return res.status(200).send({ message: "Email is required" });
     }
     if (!answer) {
-      return res.status(400).send({ message: "Answer is required" });
+      return res.status(200).send({ message: "Answer is required" });
     }
     if (!newPassword) {
-      return res.status(400).send({ message: "New Password is required" });
+      return res.status(200).send({ message: "New Password is required" });
     }
     //check
     const user = await userModel.findOne({ email, answer });
     //validation
     if (!user) {
-      return res.status(400).send({
+      return res.status(200).send({
         success: false,
         message: "Invalid Email Or Answer",
       });
