@@ -40,11 +40,12 @@ export const registerController = async (req, res) => {
     if (!answer) {
       return res.send({ message: "Answer is Required" });
     }
+
     //check user
     const exisitingUser = await userModel.findOne({ email });
     //exisiting user
     if (exisitingUser) {
-      return res.status(400).send({
+      return res.status(200).send({
         success: false,
         message:
           "Unable to register. If you already have an account, please log in",
