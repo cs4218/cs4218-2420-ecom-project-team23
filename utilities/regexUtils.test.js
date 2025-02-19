@@ -23,7 +23,7 @@ describe("Regex Utils", () => {
       "example@gmail",
       "examplegmail.com",
       "example@gmail.",
-      "@gmail.c",
+      "@gmail.co",
       "example@gmail.c",
     ];
 
