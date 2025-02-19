@@ -54,7 +54,7 @@ describe("Register Controller Test", () => {
       });
     });
 
-    it("should not save user to database and return 400 if existing email", async () => {
+    it("should not save user to database and return 200 if existing email", async () => {
       const expectedUser = {
         ...req.body,
         password: expectedHashedPassword,
@@ -67,7 +67,7 @@ describe("Register Controller Test", () => {
       expect(hashPassword).not.toHaveBeenCalled();
       expect(userModel).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message:
