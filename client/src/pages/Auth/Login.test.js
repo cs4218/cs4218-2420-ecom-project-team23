@@ -1,11 +1,10 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, fireEvent, waitFor, screen } from "@testing-library/react";
 import axios from "axios";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import toast from "react-hot-toast";
 import Login from "./Login";
-import { de } from "date-fns/locale";
 
 // Mocking axios.post
 jest.mock("axios");
@@ -48,17 +47,17 @@ describe("Login Component", () => {
     password: "password123",
   };
 
-  const fillForm = (getByPlaceholderText, user) => {
-    fireEvent.change(getByPlaceholderText("Enter Your Email"), {
+  const fillForm = (user) => {
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Email"), {
       target: { value: user.email },
     });
-    fireEvent.change(getByPlaceholderText("Enter Your Password"), {
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Password"), {
       target: { value: user.password },
     });
   };
 
   const renderPage = () => {
-    const { getByText, getByPlaceholderText } = render(
+    render(
       <MemoryRouter initialEntries={["/login"]}>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -66,10 +65,10 @@ describe("Login Component", () => {
       </MemoryRouter>
     );
 
-    const emailInput = getByPlaceholderText("Enter Your Email");
-    const passwordInput = getByPlaceholderText("Enter Your Password");
+    const emailInput = screen.getByPlaceholderText("Enter Your Email");
+    const passwordInput = screen.getByPlaceholderText("Enter Your Password");
 
-    return { getByText, getByPlaceholderText, emailInput, passwordInput };
+    return { emailInput, passwordInput };
   };
 
   beforeEach(() => {
@@ -77,25 +76,25 @@ describe("Login Component", () => {
   });
 
   it("renders login form", () => {
-    const { getByText, emailInput, passwordInput } = renderPage();
+    const { emailInput, passwordInput } = renderPage();
 
-    expect(getByText("LOGIN FORM")).toBeInTheDocument();
+    expect(screen.getByText("LOGIN FORM")).toBeInTheDocument();
     expect(emailInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
   });
 
   it("inputs should be initially empty", () => {
-    const { getByText, emailInput, passwordInput } = renderPage();
+    const { emailInput, passwordInput } = renderPage();
 
-    expect(getByText("LOGIN FORM")).toBeInTheDocument();
+    expect(screen.getByText("LOGIN FORM")).toBeInTheDocument();
     expect(emailInput.value).toBe("");
     expect(passwordInput.value).toBe("");
   });
 
   it("should allow typing into input fields", () => {
-    const { emailInput, passwordInput, getByPlaceholderText } = renderPage();
+    const { emailInput, passwordInput } = renderPage();
 
-    fillForm(getByPlaceholderText, defaultLoginUser);
+    fillForm(defaultLoginUser);
 
     expect(emailInput.value).toBe(defaultLoginUser.email);
     expect(passwordInput.value).toBe(defaultLoginUser.password);
@@ -111,11 +110,11 @@ describe("Login Component", () => {
         },
       });
 
-      const { getByText, getByPlaceholderText } = renderPage();
+      renderPage();
 
-      fillForm(getByPlaceholderText, defaultLoginUser);
+      fillForm(defaultLoginUser);
 
-      fireEvent.click(getByText("LOGIN"));
+      fireEvent.click(screen.getByText("LOGIN"));
 
       await waitFor(() => expect(axios.post).toHaveBeenCalled());
       expect(toast.success).toHaveBeenCalledWith(undefined, {
@@ -134,11 +133,11 @@ describe("Login Component", () => {
         data: { success: false, message: expectedFailureMessage },
       });
 
-      const { getByText, getByPlaceholderText } = renderPage();
+      renderPage();
 
-      fillForm(getByPlaceholderText, defaultLoginUser);
+      fillForm(defaultLoginUser);
 
-      fireEvent.click(getByText("LOGIN"));
+      fireEvent.click(screen.getByText("LOGIN"));
 
       await waitFor(() => expect(axios.post).toHaveBeenCalled());
       expect(toast.error).toHaveBeenCalledWith(expectedFailureMessage);
@@ -147,11 +146,11 @@ describe("Login Component", () => {
     it("should display error message on failed login", async () => {
       axios.post.mockRejectedValueOnce({ message: "Invalid credentials" });
 
-      const { getByText, getByPlaceholderText } = renderPage();
+      renderPage();
 
-      fillForm(getByPlaceholderText, defaultLoginUser);
+      fillForm(defaultLoginUser);
 
-      fireEvent.click(getByText("LOGIN"));
+      fireEvent.click(screen.getByText("LOGIN"));
 
       await waitFor(() => expect(axios.post).toHaveBeenCalled());
       expect(toast.error).toHaveBeenCalledWith("Something went wrong");
@@ -160,15 +159,14 @@ describe("Login Component", () => {
 
   describe("Given invalid login details", () => {
     it("should not login user with empty email", async () => {
-      const { getByText, getByPlaceholderText, emailInput, passwordInput } =
-        renderPage();
+      const { emailInput, passwordInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultLoginUser, email: "" });
+      fillForm({ ...defaultLoginUser, email: "" });
 
       expect(emailInput.value).toBe("");
       expect(passwordInput.value).toBe(defaultLoginUser.password);
 
-      fireEvent.click(getByText("LOGIN"));
+      fireEvent.click(screen.getByText("LOGIN"));
 
       expect(axios.post).not.toHaveBeenCalled();
       expect(emailInput.validity.valueMissing).toBe(true);
@@ -176,15 +174,14 @@ describe("Login Component", () => {
     });
 
     it("should not login user with empty password", async () => {
-      const { getByText, getByPlaceholderText, emailInput, passwordInput } =
-        renderPage();
+      const { emailInput, passwordInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultLoginUser, password: "" });
+      fillForm({ ...defaultLoginUser, password: "" });
 
       expect(emailInput.value).toBe(defaultLoginUser.email);
       expect(passwordInput.value).toBe("");
 
-      fireEvent.click(getByText("LOGIN"));
+      fireEvent.click(screen.getByText("LOGIN"));
 
       expect(axios.post).not.toHaveBeenCalled();
       expect(passwordInput.validity.valueMissing).toBe(true);
