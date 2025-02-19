@@ -131,7 +131,6 @@ export const loginController = async (req, res) => {
 };
 
 //forgotPasswordController
-
 export const forgotPasswordController = async (req, res) => {
   try {
     const { email, answer, newPassword } = req.body;
@@ -182,33 +181,48 @@ export const testController = (req, res) => {
 //update prfole
 export const updateProfileController = async (req, res) => {
   try {
-    const { name, email, password, address, phone } = req.body;
+    const { name, email, password, newPassword, address, phone } = req.body;
     const user = await userModel.findById(req.user._id);
-    //password
-    if (password && password.length < 6) {
-      return res.json({ error: "Passsword is required and 6 character long" });
+
+    // Verify User before updating
+    const hashedPassword = await hashPassword(password);
+
+    if (hashedPassword !== user.password) {
+      return res.status(401).json({
+        error: "Unauthorized to update. Invalid Password",
+      });
     }
-    const hashedPassword = password ? await hashPassword(password) : undefined;
+
+    if (newPassword && newPassword.length < 6) {
+      return res.status(400).json({
+        error: "Password should be at least 6 character long",
+      });
+    }
+
+    const hashedNewPassword = newPassword
+      ? await hashPassword(password)
+      : undefined;
+
     const updatedUser = await userModel.findByIdAndUpdate(
       req.user._id,
       {
         name: name || user.name,
-        password: hashedPassword || user.password,
+        password: hashedNewPassword || user.password,
         phone: phone || user.phone,
         address: address || user.address,
       },
       { new: true }
     );
-    res.status(200).send({
+    res.status(201).send({
       success: true,
-      message: "Profile Updated SUccessfully",
+      message: "Profile Updated Successfully",
       updatedUser,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
       success: false,
-      message: "Error WHile Update profile",
+      message: "Error while updating profile",
       error,
     });
   }
