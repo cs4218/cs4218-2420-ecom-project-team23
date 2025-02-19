@@ -1,7 +1,7 @@
 import React from "react";
 import { render, fireEvent, waitFor, screen } from "@testing-library/react";
 import axios from "axios";
-import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { MemoryRouter, Routes, Route, useNavigate } from "react-router-dom";
 import "@testing-library/jest-dom";
 import toast from "react-hot-toast";
 import Login from "./Login";
@@ -106,9 +106,9 @@ describe("Login Component", () => {
   });
 
   it("should redirect to forgot password page when clicked", () => {
-    const { getByText } = renderPage();
+    renderPage();
 
-    fireEvent.click(getByText("Forgot Password"));
+    fireEvent.click(screen.getByText("Forgot Password"));
 
     expect(useNavigate()).toHaveBeenCalledWith("/forgot-password");
   });
