@@ -1,8 +1,8 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, fireEvent, waitFor, screen } from "@testing-library/react";
 import axios from "axios";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import toast from "react-hot-toast";
 import Register from "./Register";
 
@@ -55,32 +55,35 @@ describe("Register Component", () => {
     dob: "2000-01-01",
   };
 
-  const fillForm = (getByPlaceholderText, user) => {
-    fireEvent.change(getByPlaceholderText("Enter Your Name"), {
+  const fillForm = (user) => {
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Name"), {
       target: { value: user.name },
     });
-    fireEvent.change(getByPlaceholderText("Enter Your Email"), {
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Email"), {
       target: { value: user.email },
     });
-    fireEvent.change(getByPlaceholderText("Enter Your Password"), {
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Password"), {
       target: { value: user.password },
     });
-    fireEvent.change(getByPlaceholderText("Enter Your Phone"), {
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Phone"), {
       target: { value: user.phone },
     });
-    fireEvent.change(getByPlaceholderText("Enter Your Address"), {
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Address"), {
       target: { value: user.address },
     });
-    fireEvent.change(getByPlaceholderText("Enter Your DOB"), {
+    fireEvent.change(screen.getByPlaceholderText("Enter Your DOB"), {
       target: { value: user.dob },
     });
-    fireEvent.change(getByPlaceholderText("What is Your Favorite sports"), {
-      target: { value: user.answer },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText("What is Your Favorite sports"),
+      {
+        target: { value: user.answer },
+      }
+    );
   };
 
   const renderPage = () => {
-    const { getByText, getByPlaceholderText } = render(
+    render(
       <MemoryRouter initialEntries={["/register"]}>
         <Routes>
           <Route path="/register" element={<Register />} />
@@ -88,17 +91,17 @@ describe("Register Component", () => {
       </MemoryRouter>
     );
 
-    const nameInput = getByPlaceholderText("Enter Your Name");
-    const emailInput = getByPlaceholderText("Enter Your Email");
-    const passwordInput = getByPlaceholderText("Enter Your Password");
-    const phoneInput = getByPlaceholderText("Enter Your Phone");
-    const addressInput = getByPlaceholderText("Enter Your Address");
-    const dobInput = getByPlaceholderText("Enter Your DOB");
-    const answerInput = getByPlaceholderText("What is Your Favorite sports");
+    const nameInput = screen.getByPlaceholderText("Enter Your Name");
+    const emailInput = screen.getByPlaceholderText("Enter Your Email");
+    const passwordInput = screen.getByPlaceholderText("Enter Your Password");
+    const phoneInput = screen.getByPlaceholderText("Enter Your Phone");
+    const addressInput = screen.getByPlaceholderText("Enter Your Address");
+    const dobInput = screen.getByPlaceholderText("Enter Your DOB");
+    const answerInput = screen.getByPlaceholderText(
+      "What is Your Favorite sports"
+    );
 
     return {
-      getByText,
-      getByPlaceholderText,
       nameInput,
       emailInput,
       passwordInput,
@@ -125,7 +128,7 @@ describe("Register Component", () => {
       answerInput,
     } = renderPage();
 
-    expect(getByText("REGISTER FORM")).toBeInTheDocument();
+    expect(screen.getByText("REGISTER FORM")).toBeInTheDocument();
     expect(nameInput).toBeInTheDocument();
     expect(emailInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
@@ -137,7 +140,6 @@ describe("Register Component", () => {
 
   it("inputs should be initially empty", () => {
     const {
-      getByText,
       nameInput,
       emailInput,
       passwordInput,
@@ -147,7 +149,7 @@ describe("Register Component", () => {
       answerInput,
     } = renderPage();
 
-    expect(getByText("REGISTER FORM")).toBeInTheDocument();
+    expect(screen.getByText("REGISTER FORM")).toBeInTheDocument();
     expect(nameInput.value).toBe("");
     expect(emailInput.value).toBe("");
     expect(passwordInput.value).toBe("");
@@ -159,7 +161,6 @@ describe("Register Component", () => {
 
   it("should allow typing in the input fields", () => {
     const {
-      getByPlaceholderText,
       nameInput,
       emailInput,
       passwordInput,
@@ -169,7 +170,7 @@ describe("Register Component", () => {
       answerInput,
     } = renderPage();
 
-    fillForm(getByPlaceholderText, defaultRegisterUser);
+    fillForm(defaultRegisterUser);
 
     expect(nameInput.value).toBe(defaultRegisterUser.name);
     expect(emailInput.value).toBe(defaultRegisterUser.email);
@@ -184,11 +185,11 @@ describe("Register Component", () => {
     it("should register the user successfully", async () => {
       axios.post.mockResolvedValueOnce({ data: { success: true } });
 
-      const { getByText, getByPlaceholderText } = renderPage();
+      renderPage();
 
-      fillForm(getByPlaceholderText, defaultRegisterUser);
+      fillForm(defaultRegisterUser);
 
-      fireEvent.click(getByText("REGISTER"));
+      fireEvent.click(screen.getByText("REGISTER"));
 
       await waitFor(() => expect(axios.post).toHaveBeenCalled());
       expect(toast.success).toHaveBeenCalledWith(
@@ -202,10 +203,10 @@ describe("Register Component", () => {
         data: { success: false, message: expectedFailureMessage },
       });
 
-      const { getByText, getByPlaceholderText } = renderPage();
-      fillForm(getByPlaceholderText, defaultRegisterUser);
+      renderPage();
 
-      fireEvent.click(getByText("REGISTER"));
+      fillForm(defaultRegisterUser);
+      fireEvent.click(screen.getByText("REGISTER"));
 
       await waitFor(() => expect(axios.post).toHaveBeenCalled());
       expect(toast.error).toHaveBeenCalledWith(expectedFailureMessage);
@@ -214,10 +215,10 @@ describe("Register Component", () => {
     it("should display error message on failed registration", async () => {
       axios.post.mockRejectedValueOnce({ message: "User already exists" });
 
-      const { getByText, getByPlaceholderText } = renderPage();
+      renderPage();
 
-      fillForm(getByPlaceholderText, defaultRegisterUser);
-      fireEvent.click(getByText("REGISTER"));
+      fillForm(defaultRegisterUser);
+      fireEvent.click(screen.getByText("REGISTER"));
 
       await waitFor(() => expect(axios.post).toHaveBeenCalled());
       expect(toast.error).toHaveBeenCalledWith("Something went wrong");
@@ -226,11 +227,11 @@ describe("Register Component", () => {
 
   describe("Given invalid registration details", () => {
     it("should prevent form submission if name is missing", async () => {
-      const { getByText, getByPlaceholderText, nameInput } = renderPage();
+      const { nameInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultRegisterUser, name: "" });
+      fillForm({ ...defaultRegisterUser, name: "" });
 
-      fireEvent.click(getByText("REGISTER"));
+      fireEvent.click(screen.getByText("REGISTER"));
 
       expect(nameInput.validity.valueMissing).toBe(true);
       expect(nameInput.validationMessage).toBe("Constraints not satisfied");
@@ -238,11 +239,11 @@ describe("Register Component", () => {
     });
 
     it("should prevent form submission if email is missing", async () => {
-      const { getByText, getByPlaceholderText, emailInput } = renderPage();
+      const { emailInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultRegisterUser, email: "" });
+      fillForm({ ...defaultRegisterUser, email: "" });
 
-      fireEvent.click(getByText("REGISTER"));
+      fireEvent.click(screen.getByText("REGISTER"));
 
       expect(emailInput.validity.valueMissing).toBe(true);
       expect(emailInput.validationMessage).toBe("Constraints not satisfied");
@@ -250,11 +251,11 @@ describe("Register Component", () => {
     });
 
     it("should prevent form submission if password is missing", async () => {
-      const { getByText, getByPlaceholderText, passwordInput } = renderPage();
+      const { passwordInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultRegisterUser, password: "" });
+      fillForm({ ...defaultRegisterUser, password: "" });
 
-      fireEvent.click(getByText("REGISTER"));
+      fireEvent.click(screen.getByText("REGISTER"));
 
       expect(passwordInput.validity.valueMissing).toBe(true);
       expect(passwordInput.validationMessage).toBe("Constraints not satisfied");
@@ -262,11 +263,11 @@ describe("Register Component", () => {
     });
 
     it("should prevent form submission if phone is missing", async () => {
-      const { getByText, getByPlaceholderText, phoneInput } = renderPage();
+      const { phoneInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultRegisterUser, phone: "" });
+      fillForm({ ...defaultRegisterUser, phone: "" });
 
-      fireEvent.click(getByText("REGISTER"));
+      fireEvent.click(screen.getByText("REGISTER"));
 
       expect(phoneInput.validity.valueMissing).toBe(true);
       expect(phoneInput.validationMessage).toBe("Constraints not satisfied");
@@ -274,11 +275,11 @@ describe("Register Component", () => {
     });
 
     it("should prevent form submission if address is missing", async () => {
-      const { getByText, getByPlaceholderText, addressInput } = renderPage();
+      const { addressInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultRegisterUser, address: "" });
+      fillForm({ ...defaultRegisterUser, address: "" });
 
-      fireEvent.click(getByText("REGISTER"));
+      fireEvent.click(screen.getByText("REGISTER"));
 
       expect(addressInput.validity.valueMissing).toBe(true);
       expect(addressInput.validationMessage).toBe("Constraints not satisfied");
@@ -286,11 +287,11 @@ describe("Register Component", () => {
     });
 
     it("should prevent form submission if dob is missing", async () => {
-      const { getByText, getByPlaceholderText, dobInput } = renderPage();
+      const { dobInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultRegisterUser, dob: "" });
+      fillForm({ ...defaultRegisterUser, dob: "" });
 
-      fireEvent.click(getByText("REGISTER"));
+      fireEvent.click(screen.getByText("REGISTER"));
 
       expect(dobInput.validity.valueMissing).toBe(true);
       expect(dobInput.validationMessage).toBe("Constraints not satisfied");
@@ -298,11 +299,11 @@ describe("Register Component", () => {
     });
 
     it("should prevent form submission if answer is missing", async () => {
-      const { getByText, getByPlaceholderText, answerInput } = renderPage();
+      const { answerInput } = renderPage();
 
-      fillForm(getByPlaceholderText, { ...defaultRegisterUser, answer: "" });
+      fillForm({ ...defaultRegisterUser, answer: "" });
 
-      fireEvent.click(getByText("REGISTER"));
+      fireEvent.click(screen.getByText("REGISTER"));
 
       expect(answerInput.validity.valueMissing).toBe(true);
       expect(answerInput.validationMessage).toBe("Constraints not satisfied");
