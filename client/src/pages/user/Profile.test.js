@@ -242,4 +242,26 @@ describe("Profile Component", () => {
       "Password should be at least 6 character long"
     );
   });
+
+  it("should show toast error if internal server error", async () => {
+    const expectedError = new Error("Internal Server Error");
+    const consoleSpy = jest.spyOn(console, "log");
+    axios.put.mockRejectedValue(expectedError);
+
+    renderPage();
+
+    fillForm(defaultUser, "");
+
+    fireEvent.click(screen.getByText("UPDATE"));
+
+    await waitFor(() => {
+      expect(axios.put).toHaveBeenCalledWith("/api/v1/auth/profile", {
+        ...defaultUser,
+        newPassword: "",
+      });
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith(expectedError);
+    expect(toast.error).toHaveBeenCalledWith("Something went wrong");
+  });
 });

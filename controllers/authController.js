@@ -178,29 +178,36 @@ export const testController = (req, res) => {
 export const updateProfileController = async (req, res) => {
   try {
     const { name, email, password, newPassword, address, phone } = req.body;
-    const user = await userModel.findById(req.user._id);
+
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({
+        error: "Unauthorized to update. Invalid Email or Password",
+      });
+    }
 
     // Verify User before updating
-    const hashedPassword = await hashPassword(password);
+    const isValidPassword = await comparePassword(password, user.password);
 
-    if (hashedPassword !== user.password) {
+    if (!isValidPassword) {
       return res.status(401).json({
-        error: "Unauthorized to update. Invalid Password",
+        error: "Unauthorized to update. Invalid Email or Password",
       });
     }
 
     if (newPassword && newPassword.length < 6) {
-      return res.status(400).json({
+      return res.status(401).json({
         error: "Password should be at least 6 character long",
       });
     }
 
     const hashedNewPassword = newPassword
-      ? await hashPassword(password)
+      ? await hashPassword(newPassword)
       : undefined;
 
     const updatedUser = await userModel.findByIdAndUpdate(
-      req.user._id,
+      user._id,
       {
         name: name || user.name,
         password: hashedNewPassword || user.password,
@@ -216,7 +223,7 @@ export const updateProfileController = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(400).send({
+    res.status(500).send({
       success: false,
       message: "Error while updating profile",
       error,
