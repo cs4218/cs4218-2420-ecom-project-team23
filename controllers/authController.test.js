@@ -60,7 +60,7 @@ describe("Register Controller Test", () => {
       });
     });
 
-    it("should not save user to database and return 400 if existing email", async () => {
+    it("should not save user to database and return 200 if existing email", async () => {
       const expectedUser = {
         ...req.body,
         password: expectedHashedPassword,
@@ -73,7 +73,7 @@ describe("Register Controller Test", () => {
       expect(hashPassword).not.toHaveBeenCalled();
       expect(userModel).not.toHaveBeenCalled();
       expect(userModel.prototype.save).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message:
@@ -245,7 +245,7 @@ describe("Login Controller Test", () => {
       });
     });
 
-    it("should not login user and return 400 if user not found", async () => {
+    it("should not login user and return 200 if user not found", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(null);
 
       await loginController(req, res);
@@ -253,7 +253,7 @@ describe("Login Controller Test", () => {
       expect(userModel.findOne).toHaveBeenCalledWith({
         email: expectedUser.email,
       });
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
@@ -280,45 +280,45 @@ describe("Login Controller Test", () => {
   });
 
   describe("Given invalid login details", () => {
-    it("should not login user and return 400 if invalid email", async () => {
+    it("should not login user and return 200 if invalid email", async () => {
       req.body.email = "";
 
       await loginController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
       });
     });
 
-    it("should not login user and return 400 if empty password", async () => {
+    it("should not login user and return 200 if empty password", async () => {
       req.body.password = "";
 
       await loginController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
       });
     });
 
-    it("should not login user and return 400 if user does not exist", async () => {
+    it("should not login user and return 200 if user does not exist", async () => {
       req.body.email = "nonexistent@gmail.com";
 
       userModel.findOne = jest.fn().mockResolvedValue(null);
 
       await loginController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
       });
     });
 
-    it("should not login user and return 400 if password does not match", async () => {
+    it("should not login user and return 200 if password does not match", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(expectedUser);
       comparePassword.mockResolvedValue(false);
 
@@ -332,7 +332,7 @@ describe("Login Controller Test", () => {
         expectedUser.password
       );
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
         message: "Invalid email or password",
