@@ -3,6 +3,7 @@ import orderModel from "../models/orderModel.js";
 
 import { comparePassword, hashPassword } from "./../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
+import { emailRegex, phoneRegex } from "../utilities/regexUtils.js";
 
 export const registerController = async (req, res) => {
   try {
@@ -11,28 +12,43 @@ export const registerController = async (req, res) => {
     if (!name) {
       return res.send({ error: "Name is Required" });
     }
+
     if (!email) {
       return res.send({ message: "Email is Required" });
+    } else if (!emailRegex.test(email)) {
+      return res.send({
+        message: "Invalid Email Format (hint: example@gmail.com)",
+      });
     }
+
     if (!password) {
       return res.send({ message: "Password is Required" });
     }
+
     if (!phone) {
       return res.send({ message: "Phone no is Required" });
+    } else if (!phoneRegex.test(phone)) {
+      return res.send({
+        message:
+          "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits]",
+      });
     }
+
     if (!address) {
       return res.send({ message: "Address is Required" });
     }
     if (!answer) {
       return res.send({ message: "Answer is Required" });
     }
+
     //check user
     const exisitingUser = await userModel.findOne({ email });
     //exisiting user
     if (exisitingUser) {
       return res.status(200).send({
         success: false,
-        message: "Already Register please login",
+        message:
+          "Unable to register. If you already have an account, please log in",
       });
     }
     //register user
@@ -49,14 +65,14 @@ export const registerController = async (req, res) => {
 
     res.status(201).send({
       success: true,
-      message: "User Register Successfully",
+      message: "User Registered Successfully",
       user,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Errro in Registeration",
+      message: "Error registering. Please try again later",
       error,
     });
   }
