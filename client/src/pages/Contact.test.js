@@ -32,8 +32,8 @@ describe("Contact Component", () => {
   it("should render the correct image on the Contact Page", () => {
     renderPage();
 
-    const img = screen.getByRole("img", { name: "contactus" });
+    const img = screen.getByRole("img", { name: "contact" });
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute("src", "/images/contactus.jpeg");
+    expect(img).toHaveAttribute("src", "/images/contact.jpeg");
   });
 });
