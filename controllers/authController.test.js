@@ -1,5 +1,4 @@
 import { jest } from "@jest/globals";
-<<<<<<< HEAD
 import {
   updateProfileController,
   getOrdersController,
@@ -17,20 +16,11 @@ jest.mock("../models/orderModel.js")
 jest.mock("../helpers/authHelper.js");
 
 describe("Update Profile Controller Test", () => {
-=======
-import { registerController } from "./authController";
-import userModel from "../models/userModel";
-
-jest.mock("../models/userModel.js");
-
-describe("Register Controller Test", () => {
->>>>>>> main
   let req, res;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-<<<<<<< HEAD
     jest.spyOn(console, "log").mockImplementation(() => {}); // to prevent logging during testing
 
     req = {
@@ -42,23 +32,12 @@ describe("Register Controller Test", () => {
         password: "password123",
         address: "New Address",
         phone: "91234567",
-=======
-    req = {
-      body: {
-        name: "John Doe",
-        email: "invalidemail.com", // Email without "@"
-        password: "password123",
-        phone: "1234567890",
-        address: "123 Test Street",
-        answer: "Test Answer",
->>>>>>> main
       },
     };
 
     res = {
       send: jest.fn(),
       status: jest.fn().mockReturnThis(),
-<<<<<<< HEAD
       json: jest.fn(),
     };
   });
@@ -362,17 +341,5 @@ describe("Order Status Controller Test", () => {
       message: "Error while updating order",
       error: mockError,
     });
-=======
-    };
-  });
-
-  it("should return an error if email format is incorrect", async () => {
-    // specify mock functionality
-    userModel.findOne = jest.fn().mockResolvedValue(null);
-    userModel.prototype.save = jest.fn();
-
-    await registerController(req, res);
-    expect(userModel.prototype.save).not.toHaveBeenCalled();
->>>>>>> main
   });
 });
