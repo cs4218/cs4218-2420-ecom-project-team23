@@ -13,39 +13,6 @@ import CartPage from "./CartPage";
 import { useCart } from "../context/cart";
 import { useAuth } from "../context/auth";
 
-// jest.mock("braintree-web-drop-in-react", () => {
-//   return {
-//     DropIn: () => <div>Mocked DropIn Component</div>,
-//     instance: {
-//       requestPaymentMethod: jest.fn().mockResolvedValue({ nonce: "mocked_nonce" }),
-//     },
-//   };
-// });
-
-// jest.mock("braintree-web-drop-in-react", () => ({
-//   DropIn: ({ onInstance }) => {
-//     // Simulate passing the instance to the onInstance callback
-//     const mockInstance = {
-//       requestPaymentMethod: jest.fn(),
-//     };
-//     // Simulate the instance callback being called
-//     onInstance(mockInstance);
-//     return <div  />; // Return a valid JSX element
-//   },
-// }));
-
-// jest.mock("braintree-web-drop-in-react", () => ({ onInstance }) => {
-//   <div />;
-// });
-
-// jest.mock('braintree-web-drop-in-react', () => ({
-//   DropIn: ({ onInstance }) => {
-//     // Call onInstance callback with a mock instance to simulate setting state
-//     onInstance({ requestPaymentMethod: jest.fn().mockResolvedValue({ nonce: 'mocked_nonce' }) });
-//     return () => <div>Mocked DropIn Component</div>;
-//   },
-// }));
-
 jest.mock("braintree-web-drop-in-react");
 
 jest.mock("axios");
