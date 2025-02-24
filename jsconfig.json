@@ -1,0 +1,3 @@
+{
+  "comment": "This jsconfig.json file is empty, but it is necessary because it allows VS Code to recognize the folder as a JavaScript project. This provides context for VS Code and enables features like autocomplete for imported in modules."
+}
