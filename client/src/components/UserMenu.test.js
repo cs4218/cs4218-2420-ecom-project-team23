@@ -15,6 +15,10 @@ describe("UserMenu", () => {
     );
   };
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
   test("renders UserMenu component", () => {
     renderComponent();
 
