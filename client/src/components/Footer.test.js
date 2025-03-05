@@ -12,6 +12,10 @@ describe("Footer Component", () => {
     );
   };
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test("renders Footer component", () => {
     renderComponent();
 
