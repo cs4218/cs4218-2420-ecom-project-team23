@@ -9,8 +9,8 @@ module.exports = {
   testMatch: ["<rootDir>/config/*.test.js", "<rootDir>/models/*.test.js"],
 
   // jest code coverage
-  collectCoverage: false,
-  collectCoverageFrom: ["config/**", "models/**"],
+  collectCoverage: true,
+  collectCoverageFrom: ["config/db.js", "models/userModel.js"],
   coverageThreshold: {
     global: {
       lines: 100,

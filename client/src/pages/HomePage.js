@@ -94,7 +94,7 @@ const HomePage = () => {
     if (checked.length || radio.length) filterProduct();
   }, [checked, radio]);
 
-  //get filterd product
+  // get filtered product
   const filterProduct = async () => {
     try {
       const { data } = await axios.post("/api/v1/product/product-filters", {
@@ -112,7 +112,7 @@ const HomePage = () => {
       <img
         src="/images/Virtual.png"
         className="banner-img"
-        alt="bannerimage"
+        alt="banner image"
         width={"100%"}
       />
       {/* banner image */}

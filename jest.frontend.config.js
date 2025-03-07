@@ -23,8 +23,19 @@ module.exports = {
   testMatch: ["<rootDir>/client/src/**/*.test.js"],
 
   // jest code coverage
-  collectCoverage: false,
-  collectCoverageFrom: ["client/src/**"],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "client/src/components/Routes/Private.js",
+    "client/src/components/UserMenu.js",
+    "client/src/pages/user/Dashboard.js",
+    "client/src/components/Footer.js",
+    "client/src/components/Header.js",
+    "client/src/components/Layout.js",
+    "client/src/components/Spinner.js",
+    "client/src/pages/About.js",
+    "client/src/pages/Pagenotfound.js",
+    "client/src/pages/HomePage.js",
+  ],
   coverageThreshold: {
     global: {
       lines: 100,
