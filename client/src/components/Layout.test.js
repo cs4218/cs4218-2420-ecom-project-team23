@@ -1,6 +1,5 @@
 import "@testing-library/jest-dom/extend-expect";
-import { fireEvent, render, screen } from "@testing-library/react";
-import toast, { Toaster } from "react-hot-toast";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Layout from "./Layout";
 
