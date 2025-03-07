@@ -131,18 +131,6 @@ describe("CartPage Test", () => {
     expect(screen.getByText("Total : $150.00")).toBeInTheDocument();
   });
 
-  // it("should handle erroneous prices for cart items and log them", async () => {
-  //   const consoleErrorSpy = jest.spyOn(console, "log");
-  //   useCart.mockReturnValue([[{description: "a"}, {description: "b"}], mockSetCart]);
-
-  //   await act(async () => {
-  //     render(<CartPage />);
-  //   });
-
-  //   expect(consoleErrorSpy).toHaveBeenCalled();
-  //   consoleErrorSpy.mockRestore();
-  // });
-
   it("should remove items from cart correctly", async () => {
     render(<CartPage />);
 
@@ -222,20 +210,4 @@ describe("CartPage Test", () => {
       state: "/cart",
     });
   });
-
-  // it("should handle successful payment", async () => {
-  //   await act(async () => {
-  //     render(<CartPage />);
-  //   });
-
-  //   fireEvent.click(screen.getByText("Make Payment"));
-  //   expect(localStorage.getItem("cart")).toBe(null);
-  //   expect(screen.getByText("Payment Completed Successfully")).toBeInTheDocument();
-  // });
-
-  // it("should handle failed payment", async () => {
-  //   render(<CartPage />);
-  //   fireEvent.click(screen.getByText("Make Payment"));
-  //   expect(screen.getByText("Processing ....")).toBeInTheDocument();
-  // });
 });
