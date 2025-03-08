@@ -49,7 +49,7 @@ const HomePage = () => {
     }
   };
 
-  //getTOtal COunt
+  //get total count
   const getTotal = async () => {
     try {
       const { data } = await axios.get("/api/v1/product/product-count");
@@ -187,7 +187,7 @@ const HomePage = () => {
                           "cart",
                           JSON.stringify([...cart, p])
                         );
-                        toast.success("Item Added to cart");
+                        toast.success("Item added to cart");
                       }}
                     >
                       ADD TO CART
@@ -211,7 +211,7 @@ const HomePage = () => {
                 ) : (
                   <>
                     {" "}
-                    Loadmore <AiOutlineReload />
+                    Load More <AiOutlineReload />
                   </>
                 )}
               </button>
