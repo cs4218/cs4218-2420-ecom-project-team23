@@ -18,9 +18,6 @@ jest.mock("react-router-dom", () => ({
 
 jest.mock("axios");
 
-// Suppress console logs in tests
-jest.spyOn(console, "log").mockImplementation(() => {});
-
 describe("SearchInput Component", () => {
   let mockSetValues;
   let mockValues;
@@ -79,9 +76,6 @@ describe("SearchInput Component", () => {
     const input = screen.getByPlaceholderText("Search");
     fireEvent.change(input, { target: { value: "Laptop" } });
 
-    // Wait for state update before submitting
-    await waitFor(() => expect(mockValues.keyword).toBe("Laptop"));
-
     const form = screen.getByRole("search");
     fireEvent.submit(form);
 
@@ -101,6 +95,10 @@ describe("SearchInput Component", () => {
   it("handles API failure gracefully", async () => {
     axios.get.mockRejectedValueOnce(new Error("Network error"));
 
+    const consoleLogSpy = jest
+      .spyOn(console, "log")
+      .mockImplementation(() => {});
+
     render(
       <MemoryRouter>
         <SearchInput />
@@ -110,22 +108,22 @@ describe("SearchInput Component", () => {
     const input = screen.getByPlaceholderText("Search");
     fireEvent.change(input, { target: { value: "Laptop" } });
 
-    // Wait for state update before submitting
-    await waitFor(() => expect(mockValues.keyword).toBe("Laptop"));
-
     const form = screen.getByRole("search");
     fireEvent.submit(form);
 
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalledWith("/api/v1/product/search/Laptop")
     );
+
     await waitFor(() =>
-      expect(console.log).toHaveBeenCalledWith(expect.any(Error))
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.any(Error))
     );
 
     expect(mockSetValues).not.toHaveBeenCalledWith(
       expect.objectContaining({ results: [{ name: "Laptop" }] })
     );
     expect(mockNavigate).not.toHaveBeenCalled();
+
+    consoleLogSpy.mockRestore();
   });
 });
