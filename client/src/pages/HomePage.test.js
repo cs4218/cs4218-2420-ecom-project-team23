@@ -11,7 +11,6 @@ import toast from "react-hot-toast";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { useCart } from "../context/cart";
 import HomePage from "./HomePage";
-import test from "node:test";
 
 jest.mock("axios");
 jest.mock("react-hot-toast");
@@ -171,11 +170,11 @@ describe("HomePage Component", () => {
       );
 
       // loads all default texts
-      expect(screen.getByText('All Products')).toBeInTheDocument();
+      expect(screen.getByText("All Products")).toBeInTheDocument();
 
       expect(screen.getByText("Filter By Category")).toBeInTheDocument();
-      expect(screen.getByText('Cat 1')).toBeInTheDocument();
-      expect(screen.getByText('Cat 2')).toBeInTheDocument();
+      expect(screen.getByText("Cat 1")).toBeInTheDocument();
+      expect(screen.getByText("Cat 2")).toBeInTheDocument();
 
       expect(screen.getByText("Filter By Price")).toBeInTheDocument();
       expect(screen.getByText("$0 to 19")).toBeInTheDocument();
@@ -244,7 +243,7 @@ describe("HomePage Component", () => {
 
         expect(toast.success).toHaveBeenCalledWith("Item added to cart");
 
-        expect(screen.queryByText('Load More')).toBeInTheDocument();
+        expect(screen.queryByText("Load More")).toBeInTheDocument();
       });
     });
   });
@@ -313,7 +312,7 @@ describe("HomePage Component", () => {
 
         expect(toast.success).toHaveBeenCalledWith("Item added to cart");
 
-        expect(screen.queryByText('Load More')).toBeNull();
+        expect(screen.queryByText("Load More")).toBeNull();
       });
     });
   });
@@ -334,14 +333,63 @@ describe("HomePage Component", () => {
     window.location = location;
   });
 
-  test("renders no products if api returns nothing", ()=>{})
-  test("able to filter and unfilter products by category", ()=>{})
-  test("able to unfilter products", ()=>{})
-  test("able to filter products by price", ()=>{})
-  test("able to filter by both price and cats", ()=>{})
-  test("should reset filters when reset filter is clicked", ()=>{})
+  test("renders no products if api returns nothing", async () => {
+    const emptyAxiosReturn = [
+      Promise.resolve({
+        data: {
+          success: true,
+          category: [],
+        },
+      }),
+      Promise.resolve({
+        data: {
+          products: [],
+        },
+      }),
+      Promise.resolve({
+        data: {
+          products: [],
+        },
+      }),
+      Promise.resolve({ data: { total: 0 } }),
+    ];
 
+    axios.get.mockImplementation((url) => axiosHelper(url, emptyAxiosReturn));
+    const { container } = renderComponent();
 
+    await waitFor(() => {
+      expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+      expect(container.querySelectorAll(".card").length).toBe(0);
+      expect(screen.queryByText("Load More")).not.toBeInTheDocument();
+    });
+  });
+
+  test("able to filter and unfilter products by category", async () => {
+    renderComponent();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("checkbox", { name: /cat 1/i })
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /cat 1/i }));
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/product-filters",
+        {
+          checked: ["1"],
+          radio: [],
+        }
+      );
+    });
+  });
+
+  test("able to unfilter products", () => {});
+  test("able to filter products by price", () => {});
+  test("able to filter by both price and cats", () => {});
+  test("should reset filters when reset filter is clicked", () => {});
 
   // Error tests
   test("apis throws error to console", async () => {
@@ -408,7 +456,93 @@ describe("HomePage Component", () => {
     });
   });
 
-  test("renders no category if success if false when getting all cats", ()=>{})
-  test("fails to filter product", ()=>{})
+  test("renders no category if success is false when getting all category", async () => {
+    const customMockCats = {
+      data: {
+        success: false,
+        category: [
+          {
+            _id: "1",
+            name: "Cat 1",
+            slug: "cat1",
+          },
+          {
+            _id: "2",
+            name: "Cat 2",
+            slug: "cat2",
+          },
+        ],
+      },
+    };
 
+    const falseAxiosReturn = [
+      Promise.resolve(customMockCats),
+      Promise.resolve(mockProductPage1),
+      Promise.resolve(mockProductPage2),
+      Promise.resolve({ data: { total: 4 } }),
+    ];
+
+    axios.get.mockImplementation((url) => axiosHelper(url, falseAxiosReturn));
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+      expect(screen.queryByRole("checkbox", { name: /cat 1/i })).not.toBeInTheDocument();
+    });
+  
+    
+  });
+
+  test("fails to filter product via checkbox", async () => {
+    axios.post.mockRejectedValue(new Error("Failed to filter"));
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("checkbox", { name: /cat 1/i })
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /cat 1/i }));
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/product-filters",
+        { checked: ["1"], radio: [] }
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        new Error("Failed to filter")
+      );
+    });
+  });
+
+  test("fails to filter product via radio box", async () => {
+    axios.post.mockRejectedValue(new Error("Failed to filter"));
+
+    renderComponent();
+
+    const radio = await screen.findByRole("radio", { name: /^\$0 to 19$/i });
+    fireEvent.click(radio);
+
+    // Verify radio selection
+    expect(radio).toBeChecked();
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/product-filters",
+        { checked: [], radio: [0, 19] }
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        new Error("Failed to filter")
+      );
+    });
+  });
 });
