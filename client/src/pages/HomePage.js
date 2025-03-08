@@ -86,6 +86,7 @@ const HomePage = () => {
     }
     setChecked(all);
   };
+  
   useEffect(() => {
     if (!checked.length || !radio.length) getAllProducts();
   }, [checked.length, radio.length]);

@@ -364,7 +364,7 @@ describe("HomePage Component", () => {
     });
   });
 
-  test("able to filter and unfilter products by category", async () => {
+  test("able to filter products by category", async () => {
     renderComponent();
 
     await waitFor(() => {
@@ -386,10 +386,63 @@ describe("HomePage Component", () => {
     });
   });
 
-  test("able to unfilter products", () => {});
-  test("able to filter products by price", () => {});
-  test("able to filter by both price and cats", () => {});
-  test("should reset filters when reset filter is clicked", () => {});
+  test("able to unfilter products", async () => {
+    axios.get.mockImplementation((url) => axiosHelper(url));
+
+    renderComponent();
+
+    await waitFor(() => {
+      fireEvent.click(screen.getByRole("checkbox", { name: /cat 1/i }));
+      fireEvent.click(screen.getByRole("checkbox", { name: /cat 1/i }));
+
+      expect(axios.get).toHaveBeenCalledWith("/api/v1/product/product-list/1");
+    });
+  });
+
+  test("able to filter products by price", async () => {
+    renderComponent();
+
+    const radio = await screen.findByRole("radio", { name: /^\$0 to 19$/i });
+
+    await waitFor(() => {
+      expect(radio).toBeInTheDocument();
+    });
+
+    fireEvent.click(radio);
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/product-filters",
+        { checked: [], radio: [0, 19] }
+      );
+    });
+  });
+
+  test("able to filter by both price and cats", async () => {
+    renderComponent();
+
+    const radio = await screen.findByRole("radio", { name: /^\$0 to 19$/i });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("checkbox", { name: /cat 1/i })
+      ).toBeInTheDocument();
+      expect(radio).toBeInTheDocument();
+    });
+
+    fireEvent.click(radio);
+    fireEvent.click(screen.getByRole("checkbox", { name: /cat 1/i }));
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/product-filters",
+        {
+          checked: ["1"],
+          radio: [0, 19],
+        }
+      );
+    });
+  });
 
   // Error tests
   test("apis throws error to console", async () => {
@@ -487,11 +540,11 @@ describe("HomePage Component", () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
-      expect(screen.queryByRole("checkbox", { name: /cat 1/i })).not.toBeInTheDocument();
+      expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
+      expect(
+        screen.queryByRole("checkbox", { name: /cat 1/i })
+      ).not.toBeInTheDocument();
     });
-  
-    
   });
 
   test("fails to filter product via checkbox", async () => {
