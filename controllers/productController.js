@@ -208,7 +208,7 @@ export const productFiltersController = async (req, res) => {
     console.log(error);
     res.status(400).send({
       success: false,
-      message: "Error while filtering Products",
+      message: "Error while filtering products",
       error,
     });
   }
@@ -274,7 +274,7 @@ export const searchProductController = async (req, res) => {
     console.log(error);
     res.status(400).send({
       success: false,
-      message: "Error In search product API",
+      message: "Error in search product API",
       error,
     });
   }
