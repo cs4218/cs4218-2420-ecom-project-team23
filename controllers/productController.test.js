@@ -135,10 +135,9 @@ describe("Product Controller - Create, Update & Delete Product", () => {
 
   describe("Delete Product", () => {
     it("should delete a product successfully", async () => {
-      req.params.pid = "prod1"; // Simulate passing a product ID
+      req.params.pid = "prod1";
 
-      // Mock the `findByIdAndDelete` to resolve successfully
-      productModel.findByIdAndDelete.mockResolvedValue({}); // Return empty object to simulate successful deletion
+      productModel.findByIdAndDelete.mockResolvedValue({});
 
       await deleteProductController(req, res);
 
@@ -147,7 +146,7 @@ describe("Product Controller - Create, Update & Delete Product", () => {
     });
 
     it("should return 500 when an error occurs", async () => {
-      req.params.pid = "prod1"; // Simulate passing a product ID
+      req.params.pid = "prod1";
 
       await deleteProductController(req, res);
 
