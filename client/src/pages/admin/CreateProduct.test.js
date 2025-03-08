@@ -1,35 +1,16 @@
-/**
- * @jest-environment jsdom
- */
-
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import { MemoryRouter } from "react-router-dom";
 import axios from "axios";
 import CreateProduct from "./CreateProduct";
+import toast from "react-hot-toast";
 
-// ✅ Mock API calls
-jest.mock("axios", () => ({
-  get: jest.fn(() =>
-    Promise.resolve({
-      data: {
-        success: true,
-        category: [
-          { _id: "1", name: "Electronics" },
-          { _id: "2", name: "Books" }, // Pre-defined category
-        ],
-      },
-    })
-  ),
-  post: jest.fn(() =>
-    Promise.resolve({
-      data: { success: true, message: "Product Created Successfully" },
-    })
-  ),
+jest.mock("axios");
+jest.mock("react-hot-toast", () => ({
+  success: jest.fn(),
+  error: jest.fn(),
 }));
-
-// ✅ Mock dependencies like Layout & AdminMenu
 jest.mock("../../components/Layout", () => ({ children }) => (
   <div data-testid="layout">{children}</div>
 ));
@@ -38,71 +19,200 @@ jest.mock("../../components/AdminMenu", () => () => (
   <div data-testid="admin-menu">Admin Menu</div>
 ));
 
-// ✅ Mock context dependencies
-jest.mock("../../context/auth", () => ({
-  useAuth: jest.fn(() => [null, jest.fn()]),
+jest.mock("react-hot-toast", () => ({
+  success: jest.fn(),
+  error: jest.fn(),
 }));
 
-jest.mock("../../context/cart", () => ({
-  useCart: jest.fn(() => [[]]),
-}));
+describe("CreateProduct Component", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  beforeAll(() => {
+    global.URL.createObjectURL = jest.fn();
+  });
 
-jest.mock("../../context/search", () => ({
-  useSearch: jest.fn(() => ["", jest.fn()]),
-}));
+  it("renders CreateProduct page", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: {
+        success: true,
+        category: [
+          { _id: "1", name: "Electronics" },
+          { _id: "2", name: "Books" },
+        ],
+      },
+    });
 
-// ✅ Simple test to check if the component renders
-test("renders CreateProduct page", async () => {
-  render(
-    <MemoryRouter>
-      <CreateProduct />
-    </MemoryRouter>
-  );
+    render(
+      <MemoryRouter>
+        <CreateProduct />
+      </MemoryRouter>
+    );
 
-  expect(await screen.findByText("Create Product")).toBeInTheDocument();
+    expect(await screen.findByText("Create Product")).toBeInTheDocument();
+    expect(screen.getByTestId("layout")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-menu")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("write a name")).toBeInTheDocument();
+  });
+
+  // it("handles successful product creation", async () => {
+  //   axios.get.mockResolvedValueOnce({
+  //     data: { success: true, category: [{ _id: "1", name: "Electronics" }] },
+  //   });
+
+  //   axios.post.mockResolvedValueOnce({ data: { success: true } });
+
+  //   render(
+  //     <MemoryRouter>
+  //       <CreateProduct />
+  //     </MemoryRouter>
+  //   );
+
+  //   await waitFor(() => screen.getByText("Create Product"));
+
+  //   fireEvent.change(screen.getByPlaceholderText("write a name"), {
+  //     target: { value: "New Laptop" },
+  //   });
+
+  //   fireEvent.change(screen.getByPlaceholderText("write a description"), {
+  //     target: { value: "A powerful laptop" },
+  //   });
+
+  //   fireEvent.change(screen.getByPlaceholderText("write a Price"), {
+  //     target: { value: "1500" },
+  //   });
+
+  //   fireEvent.change(screen.getByPlaceholderText("write a quantity"), {
+  //     target: { value: "5" },
+  //   });
+
+  //   // FIX: Select Category
+  //   fireEvent.mouseDown(document.querySelector(".ant-select-selector"));
+  //   fireEvent.click(screen.getByText("Electronics"));
+
+  //   // FIX: Select Shipping
+  //   fireEvent.mouseDown(document.querySelector(".ant-select-selector"));
+  //   fireEvent.click(screen.getByText("Yes"));
+
+  //   fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+  //   await waitFor(() => {
+  //     expect(axios.post).toHaveBeenCalled();
+  //   });
+  // });
+
+  // it("handles failed product creation (success: false)", async () => {
+  //   axios.get.mockResolvedValueOnce({
+  //     data: { success: true, category: [{ _id: "1", name: "Electronics" }] },
+  //   });
+
+  //   axios.post.mockResolvedValueOnce({
+  //     data: { success: false, message: "Product creation failed" },
+  //   });
+
+  //   render(
+  //     <MemoryRouter>
+  //       <CreateProduct />
+  //     </MemoryRouter>
+  //   );
+
+  //   await waitFor(() => screen.getByText("Create Product"));
+
+  //   fireEvent.change(screen.getByPlaceholderText("write a name"), {
+  //     target: { value: "New Laptop" },
+  //   });
+
+  //   fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+  //   await waitFor(() => {
+  //     expect(axios.post).toHaveBeenCalled();
+  //     expect(toast.error).toHaveBeenCalledWith("Product creation failed"); // FIX: Correctly referencing toast
+  //   });
+  // });
+  // it("handles API failure in product creation", async () => {
+  //   axios.get.mockResolvedValueOnce({
+  //     data: { success: true, category: [{ _id: "1", name: "Electronics" }] },
+  //   });
+
+  //   axios.post.mockRejectedValueOnce(new Error("Server error"));
+
+  //   render(
+  //     <MemoryRouter>
+  //       <CreateProduct />
+  //     </MemoryRouter>
+  //   );
+
+  //   await waitFor(() => screen.getByText("Create Product"));
+
+  //   fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+  //   await waitFor(() => {
+  //     expect(axios.post).toHaveBeenCalled();
+  //     expect(toast.error).toHaveBeenCalledWith("something went wrong"); // FIX: Ensure toast error is captured
+  //   });
+  // });
+
+  it("handles API failure when fetching categories", async () => {
+    axios.get.mockRejectedValueOnce(new Error("Network Error"));
+
+    render(
+      <MemoryRouter>
+        <CreateProduct />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "Something wwent wrong in getting catgeory"
+      );
+    });
+  });
+
+  // it("does not submit if required fields are missing", async () => {
+  //   axios.get.mockResolvedValueOnce({
+  //     data: { success: true, category: [{ _id: "1", name: "Electronics" }] },
+  //   });
+
+  //   render(
+  //     <MemoryRouter>
+  //       <CreateProduct />
+  //     </MemoryRouter>
+  //   );
+
+  //   await waitFor(() => screen.getByText("Create Product"));
+
+  //   // Click "CREATE PRODUCT" without filling required fields
+  //   fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+  //   // Ensure the error toast message is triggered
+  //   await waitFor(() => {
+  //     expect(toast.error).toHaveBeenCalledWith(expect.any(String));
+  //   });
+  // });
+
+  it("allows the user to upload an image", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: { success: true, category: [{ _id: "1", name: "Electronics" }] },
+    });
+
+    render(
+      <MemoryRouter>
+        <CreateProduct />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => screen.getByText("Create Product"));
+
+    const file = new File(["dummy content"], "test-image.jpg", {
+      type: "image/jpeg",
+    });
+
+    const fileInput = screen.getByLabelText(/Upload Photo/i);
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+    });
+  });
 });
-
-// test("fills out and submits the form", async () => {
-//   render(
-//     <MemoryRouter>
-//       <CreateProduct />
-//     </MemoryRouter>
-//   );
-
-//   // ✅ Fill out the form fields
-//   fireEvent.change(screen.getByPlaceholderText("write a name"), {
-//     target: { value: "Test Product" },
-//   });
-//   fireEvent.change(screen.getByPlaceholderText("write a description"), {
-//     target: { value: "This is a test product." },
-//   });
-//   fireEvent.change(screen.getByPlaceholderText("write a Price"), {
-//     target: { value: "100" },
-//   });
-//   fireEvent.change(screen.getByPlaceholderText("write a quantity"), {
-//     target: { value: "10" },
-//   });
-
-//   // ✅ **Force the category value to "Books"**
-//   const categoryInput = screen.getByLabelText("Category");
-//   fireEvent.change(categoryInput, { target: { value: "Books" } });
-
-//   // ✅ **Force the shipping option to "No"**
-//   const shippingInput = screen.getByLabelText("Shipping");
-//   fireEvent.change(shippingInput, { target: { value: "No" } });
-
-//   // ✅ Mock file upload
-//   const fileInput = screen.getByLabelText(/Upload Photo/i);
-//   const file = new File(["dummy content"], "test.jpg", { type: "image/jpeg" });
-//   fireEvent.change(fileInput, { target: { files: [file] } });
-
-//   // ✅ Click the create button
-//   fireEvent.click(screen.getByText(/CREATE PRODUCT/i));
-
-//   // ✅ Ensure axios.post was called
-//   await waitFor(() => expect(axios.post).toHaveBeenCalled());
-//   expect(axios.post).toHaveBeenCalledWith(
-//     "/api/v1/product/create-product",
-//     expect.any(FormData)
-//   );
-// });

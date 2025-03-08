@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 const { Option } = Select;
 
 const CreateProduct = () => {
+  console.log("CreateProduct Component Loaded");
+
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState("");

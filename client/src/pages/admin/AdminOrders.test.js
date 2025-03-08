@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/extend-expect";
 import axios from "axios";
@@ -72,7 +72,6 @@ describe("AdminOrders Component", () => {
       </MemoryRouter>
     );
 
-    // Use `findBy*` queries instead of `waitFor` + `getBy*`
     expect(await screen.findByTestId("layout")).toBeInTheDocument();
     expect(await screen.findByTestId("admin-menu")).toBeInTheDocument();
     expect(await screen.findByText("All Orders")).toBeInTheDocument();
@@ -124,7 +123,52 @@ describe("AdminOrders Component", () => {
     });
   });
 
-  it("displays no orders message when API returns an empty list", async () => {
+  it("displays 'Failed' when payment is unsuccessful", async () => {
+    const mockOrders = [
+      {
+        _id: "order1",
+        status: "Processing",
+        buyer: { name: "Jane Doe" },
+        createAt: new Date().toISOString(),
+        payment: { success: false },
+        products: [
+          {
+            _id: "product1",
+            name: "Tablet",
+            description: "A nice tablet",
+            price: 500,
+          },
+        ],
+      },
+    ];
+
+    useAuth.mockReturnValue([{ token: "mockToken" }]);
+    axios.get.mockResolvedValueOnce({ data: mockOrders });
+
+    render(
+      <MemoryRouter>
+        <AdminOrders />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("Jane Doe")).toBeInTheDocument();
+    expect(await screen.findByText("Failed")).toBeInTheDocument();
+  });
+
+  it("handles API errors when fetching orders", async () => {
+    useAuth.mockReturnValue([{ token: "mockToken" }]);
+    axios.get.mockRejectedValueOnce(new Error("Failed to fetch orders"));
+
+    render(
+      <MemoryRouter>
+        <AdminOrders />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("All Orders")).toBeInTheDocument();
+  });
+
+  it("handles empty order list gracefully", async () => {
     useAuth.mockReturnValue([{ token: "mockToken" }]);
     axios.get.mockResolvedValueOnce({ data: [] });
 
@@ -136,5 +180,54 @@ describe("AdminOrders Component", () => {
 
     expect(await screen.findByText("All Orders")).toBeInTheDocument();
     expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
+  });
+
+  it("handles an order without a buyer properly", async () => {
+    const mockOrders = [
+      {
+        _id: "order1",
+        status: "Processing",
+        buyer: null,
+        createAt: new Date().toISOString(),
+        payment: { success: true },
+        products: [{ _id: "product1", name: "Laptop", price: 1000 }],
+      },
+    ];
+
+    useAuth.mockReturnValue([{ token: "mockToken" }]);
+    axios.get.mockResolvedValueOnce({ data: mockOrders });
+
+    render(
+      <MemoryRouter>
+        <AdminOrders />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("All Orders")).toBeInTheDocument();
+    expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
+  });
+
+  it("handles an order without products properly", async () => {
+    const mockOrders = [
+      {
+        _id: "order1",
+        status: "Processing",
+        buyer: { name: "Alice" },
+        createAt: new Date().toISOString(),
+        payment: { success: true },
+        products: [],
+      },
+    ];
+
+    useAuth.mockReturnValue([{ token: "mockToken" }]);
+    axios.get.mockResolvedValueOnce({ data: mockOrders });
+
+    render(
+      <MemoryRouter>
+        <AdminOrders />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("Alice")).toBeInTheDocument();
   });
 });
