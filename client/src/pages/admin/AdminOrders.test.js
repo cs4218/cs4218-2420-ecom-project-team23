@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { render, waitFor, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/extend-expect";
 import axios from "axios";
@@ -19,7 +19,11 @@ jest.mock("../../context/auth", () => ({
 jest.mock("antd", () => ({
   ...jest.requireActual("antd"),
   Select: ({ value, onChange }) => (
-    <select data-testid="mock-select" value={value} onChange={(e) => onChange(e.target.value)}>
+    <select
+      data-testid="mock-select"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
       <option value="Processing">Processing</option>
       <option value="Shipped">Shipped</option>
       <option value="Delivered">Delivered</option>
@@ -28,8 +32,12 @@ jest.mock("antd", () => ({
   ),
 }));
 
-jest.mock("../../components/AdminMenu", () => () => <div data-testid="admin-menu">Admin Menu</div>);
-jest.mock("../../components/Layout", () => ({ children }) => <div data-testid="layout">{children}</div>);
+jest.mock("../../components/AdminMenu", () => () => (
+  <div data-testid="admin-menu">Admin Menu</div>
+));
+jest.mock("../../components/Layout", () => ({ children }) => (
+  <div data-testid="layout">{children}</div>
+));
 
 describe("AdminOrders Component", () => {
   beforeEach(() => {
@@ -45,7 +53,12 @@ describe("AdminOrders Component", () => {
         createAt: new Date().toISOString(),
         payment: { success: true },
         products: [
-          { _id: "product1", name: "Laptop", description: "A powerful laptop", price: 1000 },
+          {
+            _id: "product1",
+            name: "Laptop",
+            description: "A powerful laptop",
+            price: 1000,
+          },
         ],
       },
     ];
@@ -59,16 +72,15 @@ describe("AdminOrders Component", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByTestId("layout")).toBeInTheDocument();
-      expect(screen.getByTestId("admin-menu")).toBeInTheDocument();
-      expect(screen.getByText("All Orders")).toBeInTheDocument();
-      expect(screen.getByText("John Doe")).toBeInTheDocument();
-      expect(screen.getByText("Processing")).toBeInTheDocument();
-      expect(screen.getByText("Success")).toBeInTheDocument();
-      expect(screen.getByText("Laptop")).toBeInTheDocument();
-      expect(screen.getByText("Price : 1000")).toBeInTheDocument();
-    });
+    // Use `findBy*` queries instead of `waitFor` + `getBy*`
+    expect(await screen.findByTestId("layout")).toBeInTheDocument();
+    expect(await screen.findByTestId("admin-menu")).toBeInTheDocument();
+    expect(await screen.findByText("All Orders")).toBeInTheDocument();
+    expect(await screen.findByText("John Doe")).toBeInTheDocument();
+    expect(await screen.findByText("Processing")).toBeInTheDocument();
+    expect(await screen.findByText("Success")).toBeInTheDocument();
+    expect(await screen.findByText("Laptop")).toBeInTheDocument();
+    expect(await screen.findByText("Price : 1000")).toBeInTheDocument();
   });
 
   it("updates order status when changed", async () => {
@@ -79,7 +91,14 @@ describe("AdminOrders Component", () => {
         buyer: { name: "John Doe" },
         createAt: new Date().toISOString(),
         payment: { success: true },
-        products: [{ _id: "product1", name: "Laptop", description: "A powerful laptop", price: 1000 }],
+        products: [
+          {
+            _id: "product1",
+            name: "Laptop",
+            description: "A powerful laptop",
+            price: 1000,
+          },
+        ],
       },
     ];
 
@@ -93,15 +112,15 @@ describe("AdminOrders Component", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => screen.getByText("John Doe"));
+    await screen.findByText("John Doe");
 
-    const selectDropdown = screen.getByTestId("mock-select");
+    const selectDropdown = await screen.findByTestId("mock-select");
     expect(selectDropdown).toBeInTheDocument();
 
     await userEvent.selectOptions(selectDropdown, "Shipped");
 
-    await waitFor(() => {
-      expect(axios.put).toHaveBeenCalledWith("/api/v1/auth/order-status/order1", { status: "Shipped" });
+    expect(axios.put).toHaveBeenCalledWith("/api/v1/auth/order-status/order1", {
+      status: "Shipped",
     });
   });
 
@@ -115,9 +134,7 @@ describe("AdminOrders Component", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText("All Orders")).toBeInTheDocument();
-      expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
-    });
+    expect(await screen.findByText("All Orders")).toBeInTheDocument();
+    expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
   });
 });

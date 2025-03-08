@@ -8,9 +8,12 @@ import "@testing-library/jest-dom/extend-expect";
 import { MemoryRouter } from "react-router-dom";
 import Users from "../../pages/admin/Users";
 
-// Mock AdminMenu and Layout components
-jest.mock("../../components/AdminMenu", () => () => <div data-testid="admin-menu">Admin Menu</div>);
-jest.mock("../../components/Layout", () => ({ children }) => <div data-testid="layout">{children}</div>);
+jest.mock("../../components/AdminMenu", () => () => (
+  <div data-testid="admin-menu">Admin Menu</div>
+));
+jest.mock("../../components/Layout", () => ({ children }) => (
+  <div data-testid="layout">{children}</div>
+));
 
 describe("Users Component", () => {
   beforeEach(() => {
@@ -24,13 +27,10 @@ describe("Users Component", () => {
       </MemoryRouter>
     );
 
-    // Ensure Layout and AdminMenu are rendered
-    await waitFor(() => {
-      expect(screen.getByTestId("layout")).toBeInTheDocument();
-      expect(screen.getByTestId("admin-menu")).toBeInTheDocument();
-    });
+    // Use findByTestId which is already async and waits for the element to appear
+    expect(await screen.findByTestId("layout")).toBeInTheDocument();
+    expect(await screen.findByTestId("admin-menu")).toBeInTheDocument();
 
-    // Ensure "All Users" heading is displayed
     expect(screen.getByText("All Users")).toBeInTheDocument();
   });
 });

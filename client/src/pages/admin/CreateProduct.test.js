@@ -12,19 +12,28 @@ import CreateProduct from "./CreateProduct";
 
 jest.mock("axios");
 
-// Mock Ant Design components
+// Mock Ant Design's Select component
 jest.mock("antd", () => ({
   ...jest.requireActual("antd"),
-  Select: ({ children, onChange }) => (
-    <select data-testid="mock-select" onChange={(e) => onChange(e.target.value)}>
+  Select: ({ value, onChange, children }) => (
+    <select
+      data-testid="mock-select"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
       {children}
     </select>
   ),
-  Option: ({ children, value }) => <option value={value}>{children}</option>,
+  Option: ({ value, children }) => <option value={value}>{children}</option>,
 }));
 
-jest.mock("../../components/AdminMenu", () => () => <div data-testid="admin-menu">Admin Menu</div>);
-jest.mock("../../components/Layout", () => ({ children }) => <div data-testid="layout">{children}</div>);
+// Mock other components
+jest.mock("../../components/AdminMenu", () => () => (
+  <div data-testid="admin-menu">Admin Menu</div>
+));
+jest.mock("../../components/Layout", () => ({ children }) => (
+  <div data-testid="layout">{children}</div>
+));
 
 describe("CreateProduct Component", () => {
   beforeEach(() => {
@@ -37,7 +46,9 @@ describe("CreateProduct Component", () => {
       { _id: "cat2", name: "Fashion" },
     ];
 
-    axios.get.mockResolvedValueOnce({ data: { success: true, category: mockCategories } });
+    axios.get.mockResolvedValueOnce({
+      data: { success: true, category: mockCategories },
+    });
 
     render(
       <MemoryRouter>
@@ -57,12 +68,14 @@ describe("CreateProduct Component", () => {
     });
   });
 
-  it("selects a category from the dropdown", async () => {
+  it("allows the user to select a category", async () => {
     const mockCategories = [
       { _id: "cat1", name: "Electronics" },
       { _id: "cat2", name: "Fashion" },
     ];
-    axios.get.mockResolvedValueOnce({ data: { success: true, category: mockCategories } });
+    axios.get.mockResolvedValueOnce({
+      data: { success: true, category: mockCategories },
+    });
 
     render(
       <MemoryRouter>
@@ -72,13 +85,13 @@ describe("CreateProduct Component", () => {
 
     await waitFor(() => screen.getByText("Electronics"));
 
-    const select = screen.getByTestId("mock-select");
+    const select = await screen.findByTestId("mock-select");
     fireEvent.change(select, { target: { value: "cat1" } });
 
     expect(select.value).toBe("cat1");
   });
 
-  it("uploads a product image", async () => {
+  it("allows the user to upload an image", async () => {
     render(
       <MemoryRouter>
         <CreateProduct />
@@ -86,7 +99,7 @@ describe("CreateProduct Component", () => {
     );
 
     const file = new File(["sample"], "sample.png", { type: "image/png" });
-    const input = screen.getByLabelText("Upload Photo");
+    const input = await screen.findByLabelText("Upload Photo");
 
     fireEvent.change(input, { target: { files: [file] } });
 
@@ -94,30 +107,32 @@ describe("CreateProduct Component", () => {
     expect(input.files).toHaveLength(1);
   });
 
-  it("fills in product details", async () => {
+  it("allows the user to fill in product details", async () => {
     render(
       <MemoryRouter>
         <CreateProduct />
       </MemoryRouter>
     );
 
-    const nameInput = screen.getByPlaceholderText("write a name");
-    const descInput = screen.getByPlaceholderText("write a description");
-    const priceInput = screen.getByPlaceholderText("write a Price");
-    const quantityInput = screen.getByPlaceholderText("write a quantity");
+    const nameInput = await screen.findByPlaceholderText("write a name");
+    const descInput = await screen.findByPlaceholderText("write a description");
+    const priceInput = await screen.findByPlaceholderText("write a Price");
+    const quantityInput = await screen.findByPlaceholderText(
+      "write a quantity"
+    );
 
-    userEvent.type(nameInput, "New Product");
-    userEvent.type(descInput, "This is a test product.");
-    userEvent.type(priceInput, "199");
-    userEvent.type(quantityInput, "5");
+    await userEvent.type(nameInput, "New Product");
+    await userEvent.type(descInput, "This is a test product.");
+    await userEvent.type(priceInput, "199");
+    await userEvent.type(quantityInput, "5");
 
     expect(nameInput).toHaveValue("New Product");
     expect(descInput).toHaveValue("This is a test product.");
-    expect(priceInput).toHaveValue(199);
-    expect(quantityInput).toHaveValue(5);
+    expect(priceInput).toHaveValue("199");
+    expect(quantityInput).toHaveValue("5");
   });
 
-  it("submits the product form", async () => {
+  it("submits the product form successfully", async () => {
     axios.post.mockResolvedValueOnce({ data: { success: true } });
 
     render(
@@ -126,18 +141,20 @@ describe("CreateProduct Component", () => {
       </MemoryRouter>
     );
 
-    const nameInput = screen.getByPlaceholderText("write a name");
-    const descInput = screen.getByPlaceholderText("write a description");
-    const priceInput = screen.getByPlaceholderText("write a Price");
-    const quantityInput = screen.getByPlaceholderText("write a quantity");
-    const submitButton = screen.getByText("CREATE PRODUCT");
+    const nameInput = await screen.findByPlaceholderText("write a name");
+    const descInput = await screen.findByPlaceholderText("write a description");
+    const priceInput = await screen.findByPlaceholderText("write a Price");
+    const quantityInput = await screen.findByPlaceholderText(
+      "write a quantity"
+    );
+    const submitButton = await screen.findByText("CREATE PRODUCT");
 
-    userEvent.type(nameInput, "New Product");
-    userEvent.type(descInput, "This is a test product.");
-    userEvent.type(priceInput, "199");
-    userEvent.type(quantityInput, "5");
+    await userEvent.type(nameInput, "New Product");
+    await userEvent.type(descInput, "This is a test product.");
+    await userEvent.type(priceInput, "199");
+    await userEvent.type(quantityInput, "5");
 
-    userEvent.click(submitButton);
+    await userEvent.click(submitButton);
 
     await waitFor(() => {
       expect(axios.post).toHaveBeenCalledWith(
