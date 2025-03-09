@@ -37,6 +37,7 @@ export const registerController = async (req, res) => {
     if (!address) {
       return res.send({ message: "Address is Required" });
     }
+
     if (!answer) {
       return res.send({ message: "Answer is Required" });
     }
@@ -171,12 +172,7 @@ export const forgotPasswordController = async (req, res) => {
 
 //test controller
 export const testController = (req, res) => {
-  try {
-    res.send("Protected Routes");
-  } catch (error) {
-    console.log(error);
-    res.send({ error });
-  }
+  res.send("Protected Routes");
 };
 
 //update prfole
