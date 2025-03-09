@@ -25,8 +25,9 @@ module.exports = {
     "<rootDir>/client/src/hooks/*.test.js",
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/pages/user/*.test.js",
-    "<rootDir>/client/src/pages/*.test.js",
     "<rootDir>/client/src/pages/admin/*.test.js",
+    "<rootDir>/client/src/pages/*.test.js",
+    "<rootDir>/client/src/components/**/*.test.js",
   ],
 
   // jest code coverage
@@ -35,6 +36,7 @@ module.exports = {
     "client/src/context/**",
     "client/src/hooks/**",
     "client/src/pages/**",
+    "client/src/components/**",
   ],
   coverageThreshold: {
     global: {
