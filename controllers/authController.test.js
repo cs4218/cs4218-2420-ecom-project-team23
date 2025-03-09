@@ -1,18 +1,26 @@
 import { jest } from "@jest/globals";
+import JWT from "jsonwebtoken";
 import {
   registerController,
   loginController,
   forgotPasswordController,
   testController,
   updateProfileController,
+  getOrdersController,
+  getAllOrdersController,
+  orderStatusController,
 } from "./authController";
-import userModel from "../models/userModel";
 import { hashPassword, comparePassword } from "../helpers/authHelper";
-import JWT from "jsonwebtoken";
+import userModel from "../models/userModel";
+import orderModel from "../models/orderModel";
 
 jest.mock("../models/userModel");
 jest.mock("../helpers/authHelper");
 jest.mock("jsonwebtoken");
+
+jest.mock("../models/orderModel.js");
+
+jest.mock("../helpers/authHelper.js");
 
 describe("Register Controller Test", () => {
   let req, res;
@@ -515,6 +523,9 @@ describe("Update Profile Controller Test", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    jest.spyOn(console, "log").mockImplementation(() => {}); // to prevent logging during testing
+
     req = {
       body: {
         ...defaultUser,
@@ -529,6 +540,100 @@ describe("Update Profile Controller Test", () => {
       json: jest.fn(),
       send: jest.fn(),
     };
+  });
+
+  it("should update profile with valid data", async () => {
+    const expectedUpdatedUser = {
+      ...defaultUser,
+      phone: updatedUserData.phone,
+    };
+    userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+    comparePassword.mockResolvedValue(true);
+    hashPassword.mockResolvedValue(defaultUser.password);
+    userModel.findByIdAndUpdate = jest
+      .fn()
+      .mockResolvedValue({ ...expectedUpdatedUser });
+
+    await updateProfileController(req, res);
+
+    expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+    expect(comparePassword).toHaveBeenCalledWith(
+      req.body.password,
+      defaultUser.password
+    );
+    expect(hashPassword).toHaveBeenCalledWith(req.body.newPassword);
+    expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      defaultUser._id,
+      {
+        name: req.body.name,
+        password: defaultUser.password,
+        phone: updatedUserData.phone,
+        address: req.body.address,
+      },
+      { new: true }
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Profile Updated Successfully",
+      updatedUser: expectedUpdatedUser,
+    });
+  });
+
+  it("should return an error if password is shorter than 6 characters", async () => {
+    req.body.newPassword = "new";
+
+    userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+    comparePassword.mockResolvedValue(true);
+
+    await updateProfileController(req, res);
+
+    expect(userModel.findOne).toHaveBeenCalledWith({
+      email: req.body.email,
+    });
+    expect(comparePassword).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Password should be at least 6 character long",
+    });
+  });
+
+  it("should update only provided fields and retain existing values", async () => {
+    req.body = { name: "Updated Name" }; // Only name is updated
+
+    userModel.fineOne = jest.fn().mockResolvedValue(defaultUser);
+    comparePassword.mockResolvedValue(true);
+    hashPassword.mockResolvedValue(defaultUser.password);
+    userModel.findByIdAndUpdate = jest
+      .fn()
+      .mockResolvedValue({ ...defaultUser, name: "Updated Name" });
+
+    await updateProfileController(req, res);
+
+    expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      "id",
+      {
+        name: "Updated Name",
+        password: defaultUser.password,
+        phone: defaultUser.phone,
+        address: defaultUser.address,
+      },
+      { new: true }
+    );
+  });
+
+  it("should handle errors gracefully", async () => {
+    const mockError = new Error("Database error");
+    userModel.findOne.mockRejectedValue(mockError);
+
+    await updateProfileController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Error while updating profile",
+      error: mockError,
+    });
   });
 
   /*
@@ -976,6 +1081,213 @@ describe("Update Profile Controller Test", () => {
       expect(res.json).toHaveBeenCalledWith({
         error: "Password should be at least 6 character long",
       });
+    });
+  });
+});
+
+describe("Get Orders Controller Test", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    jest.spyOn(console, "log").mockImplementation(() => {}); // to prevent logging during testing
+
+    req = {
+      user: {
+        _id: "user123",
+      },
+    };
+
+    res = {
+      send: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it("should return orders successfully", async () => {
+    const mockOrders = [
+      {
+        _id: "order1",
+        products: [
+          {
+            _id: "product1",
+            name: "product 1",
+            price: "price 1",
+            description: "descrption 1",
+          },
+        ],
+        buyer: { name: "John Doe" },
+      },
+    ];
+    const mockPopulate2 = jest.fn().mockResolvedValue(mockOrders);
+    const mockPopulate1 = jest
+      .fn()
+      .mockReturnValue({ populate: mockPopulate2 });
+    orderModel.find = jest.fn().mockReturnValue({
+      populate: mockPopulate1,
+    });
+
+    await getOrdersController(req, res);
+
+    expect(orderModel.find).toHaveBeenCalledWith({ buyer: "user123" });
+    expect(mockPopulate1).toHaveBeenCalledWith("products", "-photo");
+    expect(mockPopulate2).toHaveBeenCalledWith("buyer", "name");
+    expect(res.json).toHaveBeenCalledWith(mockOrders);
+  });
+
+  it("should handle errors and return status 500", async () => {
+    const mockError = new Error("Database error");
+    orderModel.find = jest.fn().mockReturnValue({
+      populate: jest.fn().mockReturnValue({
+        populate: jest.fn().mockRejectedValue(mockError),
+      }),
+    });
+
+    await getOrdersController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Error while getting orders",
+      error: mockError,
+    });
+  });
+});
+
+describe("Get All Orders Controller", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    jest.spyOn(console, "log").mockImplementation(() => {}); // to prevent logging during testing
+
+    req = null;
+
+    res = {
+      send: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it("should return all orders successfully, sorted in descending order of createdAt", async () => {
+    const mockOrders = [
+      {
+        _id: "order1",
+        products: [
+          {
+            _id: "product1",
+            name: "product 1",
+            price: "price 1",
+            description: "descrption 1",
+          },
+        ],
+        buyer: { name: "John Doe" },
+        createdAt: "2024-01-10T12:00:00Z",
+      },
+      {
+        _id: "order2",
+        products: [
+          {
+            _id: "product2",
+            name: "product 2",
+            price: "price 2",
+            description: "descrption 2",
+          },
+        ],
+        buyer: { name: "Alice Wong" },
+        createdAt: "2024-01-11T12:00:00Z",
+      },
+    ];
+    const mockSort = jest.fn().mockResolvedValue(mockOrders);
+    const mockPopulate2 = jest.fn().mockReturnValue({ sort: mockSort });
+    const mockPopulate1 = jest
+      .fn()
+      .mockReturnValue({ populate: mockPopulate2 });
+    orderModel.find = jest.fn().mockReturnValue({ populate: mockPopulate1 });
+
+    await getAllOrdersController(req, res);
+
+    expect(orderModel.find).toHaveBeenCalledWith({});
+    expect(mockPopulate1).toHaveBeenCalledWith("products", "-photo");
+    expect(mockPopulate2).toHaveBeenCalledWith("buyer", "name");
+    expect(mockSort).toHaveBeenCalledWith({ createdAt: "-1" });
+    expect(res.json).toHaveBeenCalledWith(mockOrders);
+  });
+
+  it("should handle errors and return status 500", async () => {
+    const mockError = new Error("Database error");
+    orderModel.find = jest.fn().mockReturnValue({
+      populate: jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockRejectedValue(mockError),
+        }),
+      }),
+    });
+
+    await getAllOrdersController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Error while getting orders",
+      error: mockError,
+    });
+  });
+});
+
+describe("Order Status Controller Test", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    jest.spyOn(console, "log").mockImplementation(() => {}); // to prevent logging during testing
+
+    req = {
+      params: {
+        orderId: "order1",
+      },
+      body: {
+        status: "Shipped",
+      },
+    };
+
+    res = {
+      send: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it("should return an order with its status successfully", async () => {
+    const mockOrder = { _id: "order1", status: "Shipped" };
+    orderModel.findByIdAndUpdate = jest.fn().mockResolvedValue(mockOrder);
+
+    await orderStatusController(req, res);
+
+    expect(orderModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      "order1",
+      { status: "Shipped" },
+      { new: true }
+    );
+    expect(res.json).toHaveBeenCalledWith(mockOrder);
+  });
+
+  it("should handle errors and return status 500", async () => {
+    const mockError = new Error("Database error");
+    orderModel.findByIdAndUpdate = jest.fn().mockRejectedValue(mockError);
+
+    await orderStatusController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Error while updating order",
+      error: mockError,
     });
   });
 });
