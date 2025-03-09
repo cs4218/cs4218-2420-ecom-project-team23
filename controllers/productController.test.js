@@ -1,6 +1,5 @@
-import { TextEncoder, TextDecoder } from "util"; // Import the polyfill
+import { TextEncoder, TextDecoder } from "util";
 
-// Set them globally
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
@@ -23,7 +22,6 @@ describe("Product Controller - Create, Update & Delete Product", () => {
     req = { params: {}, fields: {}, files: {} };
     res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
 
-    // Mock product instance
     mockProductInstance = {
       _id: "prod1",
       name: "iPhone 15",
@@ -36,7 +34,6 @@ describe("Product Controller - Create, Update & Delete Product", () => {
       save: jest.fn().mockResolvedValue(true),
     };
 
-    // Mock updated product
     mockUpdatedProduct = {
       _id: "prod1",
       name: "iPhone 15 Pro",
@@ -53,7 +50,6 @@ describe("Product Controller - Create, Update & Delete Product", () => {
       save: jest.fn().mockResolvedValue(true),
     };
 
-    // Mocking Mongoose methods
     productModel.mockImplementation(() => mockProductInstance);
     productModel.create.mockResolvedValue(mockProductInstance);
     productModel.findByIdAndUpdate = jest
