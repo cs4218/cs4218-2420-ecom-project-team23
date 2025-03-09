@@ -47,6 +47,7 @@
     ]
   },
   "devDependencies": {
+    "ajv": "^7.2.4",
     "jest": "^27.5.1"
   }
 }
