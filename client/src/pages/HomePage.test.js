@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import { useCart } from "../context/cart";
 import HomePage from "./HomePage";
 
@@ -513,18 +513,7 @@ describe("HomePage Component", () => {
     const customMockCats = {
       data: {
         success: false,
-        category: [
-          {
-            _id: "1",
-            name: "Cat 1",
-            slug: "cat1",
-          },
-          {
-            _id: "2",
-            name: "Cat 2",
-            slug: "cat2",
-          },
-        ],
+        category: mockCats.data.category,
       },
     };
 

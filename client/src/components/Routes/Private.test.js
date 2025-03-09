@@ -13,7 +13,7 @@ jest.mock("../../context/auth", () => ({
 
 jest.mock("../Spinner", () => () => <div data-testid="spinner">Spinner</div>);
 
-describe("Private Route", () => {
+describe("Private Route Component", () => {
   const OutletComponent = () => <div data-testid="outlet">Outlet</div>;
 
   const renderComponent = () => {
@@ -32,7 +32,6 @@ describe("Private Route", () => {
     jest.clearAllMocks();
   });
 
-  // testing for spinner when authenticating
   test("renders Spinner when checking authentication", () => {
     useAuth.mockReturnValue([{ token: "check-auth" }]);
 
@@ -42,7 +41,6 @@ describe("Private Route", () => {
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
   });
 
-  // testing for spinner when no token
   test("renders Spinner when no token", () => {
     useAuth.mockReturnValue([{ token: null }]);
     renderComponent();
@@ -51,8 +49,7 @@ describe("Private Route", () => {
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
   });
 
-  // testing for outlet when authenticated
-  test("renders component when authenticated", async () => {
+  test("renders outlet component when authenticated", async () => {
     useAuth.mockReturnValue([{ token: "correct-token" }]);
     axios.get.mockResolvedValue({ data: { ok: true } });
 
@@ -65,7 +62,6 @@ describe("Private Route", () => {
     });
   });
 
-  // testing for re-render when token updates
   test("re-runs auth check when token changes", async () => {
     useAuth.mockReturnValue([{ token: null }]);
     const { rerender } = renderComponent();
@@ -92,4 +88,16 @@ describe("Private Route", () => {
       expect(screen.getByTestId("outlet")).toBeInTheDocument();
     });
   });
+
+  test ("shows spinner when data.ok is false", async () => {
+    useAuth.mockReturnValue([{ token: "test-token" }]);
+    axios.get.mockResolvedValue({ data: { ok: false } });
+
+    renderComponent();
+
+    expect(axios.get).toHaveBeenCalledWith("/api/v1/auth/user-auth");
+    await waitFor(() => {
+      expect(screen.getByTestId("spinner")).toBeInTheDocument();
+    });
+  })
 });

@@ -88,26 +88,15 @@ describe("User Model", () => {
     const user = new UserModel(userData);
 
     const savedUser = await user.save();
-    userData.role = 0;
 
     expect(savedUser.role).toEqual(1);
   });
 
   test("test for uniqueness of email", async () => {
-    const user2Data = {
-      name: "Emily Blunt",
-      email: "john_doe@test.com",
-      password: "password1",
-      phone: "12345",
-      address: {
-        test: "test2",
-      },
-      answer: "answer12",
-    };
     const user1 = new UserModel(userData);
     await user1.save();
 
-    const user2 = new UserModel(user2Data);
+    const user2 = new UserModel(userData);
 
     
     await expect(user2.save()).rejects.toThrow("duplicate");

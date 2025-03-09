@@ -25,11 +25,19 @@ describe("Layout Component", () => {
     author: "Custom author",
   };
 
+  const renderCustomComponent = () => {
+    return render(
+      <MemoryRouter>
+        <Layout {...mockCustomProps}>This is Custom Content</Layout>
+      </MemoryRouter>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test("should render Layout component with default props", () => {
+  test("should render mocked components with default props", () => {
     render(
       <MemoryRouter>
         <Layout>This is Content</Layout>
@@ -43,12 +51,8 @@ describe("Layout Component", () => {
     expect(screen.getByTestId("footer")).toBeInTheDocument();
   });
 
-  test("should render Layout component with custom props", () => {
-    render(
-      <MemoryRouter>
-        <Layout {...mockCustomProps}>This is Custom Content</Layout>
-      </MemoryRouter>
-    );
+  test("should render mocked component with custom props", () => {
+    renderCustomComponent();
 
     expect(screen.getByTestId("helmet-mock")).toBeInTheDocument();
     expect(screen.getByTestId("header")).toBeInTheDocument();
@@ -58,11 +62,7 @@ describe("Layout Component", () => {
   });
 
   test("should render Helmet properties", () => {
-    render(
-      <MemoryRouter>
-        <Layout {...mockCustomProps}>This is Custom Content</Layout>
-      </MemoryRouter>
-    );
+    renderCustomComponent();
 
     expect(document.querySelector('meta[name="description"]').content).toBe(
       mockCustomProps.description

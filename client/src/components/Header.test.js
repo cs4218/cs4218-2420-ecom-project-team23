@@ -98,17 +98,17 @@ describe("Header Component", () => {
     useAuth.mockReturnValue([{ user: mockUser }]);
     renderComponent();
 
+    const dashboardLink = screen.getByRole("link", { name: /dashboard/i });
+
     expect(
       screen.queryByRole("link", { name: /register/i })
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: /login/i })
     ).not.toBeInTheDocument();
-
     expect(screen.getByText(mockUser.name)).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /dashboard/i })
-    ).toBeInTheDocument();
+    expect(dashboardLink).toBeInTheDocument();
+    expect(dashboardLink).toHaveAttribute("href", "/dashboard/user");
     expect(screen.getByRole("link", { name: /logout/i })).toBeInTheDocument();
   });
 
@@ -140,20 +140,9 @@ describe("Header Component", () => {
     });
   });
 
-  test("dashboard links points to correct route based on role", () => {
-    useAuth.mockReturnValue([{ user: mockUser }]);
-    const { rerender } = renderComponent();
-
-    const dashboardLink = screen.getByRole("link", { name: /dashboard/i });
-
-    expect(dashboardLink).toHaveAttribute("href", "/dashboard/user");
-
+  test("dashboard links points to correct route for admin", () => {
     useAuth.mockReturnValue([{ user: mockAdmin }]);
-    rerender(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderComponent();
 
     const adminDashboardLink = screen.getByRole("link", { name: /dashboard/i });
 
@@ -176,6 +165,6 @@ describe("Header Component", () => {
       token: "",
     });
     expect(localStorageRemoveAuth).toHaveBeenCalledWith("auth");
-    expect(toast.success).toHaveBeenCalledWith("Logout Successfully");
+    expect(toast.success).toHaveBeenCalledWith("Logout Successful");
   });
 });

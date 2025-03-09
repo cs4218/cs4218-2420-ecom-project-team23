@@ -1,13 +1,15 @@
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 import Footer from "./Footer";
 
 describe("Footer Component", () => {
   const renderComponent = () => {
     return render(
-      <MemoryRouter>
-        <Footer />
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <Routes>
+          <Route path="/dashboard" element={<Footer />} />
+        </Routes>
       </MemoryRouter>
     );
   };
