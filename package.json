@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "ecommerce rest api",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
@@ -38,6 +37,7 @@
     "@babel/preset-env": "^7.24.5",
     "@babel/preset-react": "^7.24.1",
     "@playwright/test": "^1.44.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20.12.12",
     "babel-jest": "^29.7.0",
     "identity-obj-proxy": "^3.0.0",
@@ -47,7 +47,7 @@
     "supertest": "^7.0.0"
   },
   "jest": {
-    "testEnvironment": "jest-environment-jsdom",
+    "testEnvironment": "node",
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
     },

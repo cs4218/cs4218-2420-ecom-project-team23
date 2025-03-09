@@ -8,11 +8,20 @@ import "@testing-library/jest-dom/extend-expect";
 import axios from "axios";
 import { MemoryRouter } from "react-router-dom";
 import Products from "./Products";
+import toast from "react-hot-toast";
 
 jest.mock("axios");
+jest.mock("react-hot-toast", () => ({
+  success: jest.fn(),
+  error: jest.fn(),
+}));
 
-jest.mock("../../components/AdminMenu", () => () => <div data-testid="admin-menu">Admin Menu</div>);
-jest.mock("../../components/Layout", () => ({ children }) => <div data-testid="layout">{children}</div>);
+jest.mock("../../components/AdminMenu", () => () => (
+  <div data-testid="admin-menu">Admin Menu</div>
+));
+jest.mock("../../components/Layout", () => ({ children }) => (
+  <div data-testid="layout">{children}</div>
+));
 
 describe("Products Component", () => {
   beforeEach(() => {
@@ -57,6 +66,24 @@ describe("Products Component", () => {
     });
   });
 
+  it("handles API failure when fetching products", async () => {
+    axios.get.mockRejectedValueOnce(new Error("Network Error"));
+
+    render(
+      <MemoryRouter>
+        <Products />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Someething Went Wrong");
+    });
+
+    // Ensure products are not rendered when API fails
+    expect(screen.queryByText("Product 1")).not.toBeInTheDocument();
+    expect(screen.queryByText("Product 2")).not.toBeInTheDocument();
+  });
+
   it("displays product cards with correct links", async () => {
     const mockProducts = [
       {
@@ -78,7 +105,10 @@ describe("Products Component", () => {
     await waitFor(() => screen.getByText("Product 1"));
 
     const productLink = screen.getByText("Product 1").closest("a");
-    expect(productLink).toHaveAttribute("href", "/dashboard/admin/product/product-1");
+    expect(productLink).toHaveAttribute(
+      "href",
+      "/dashboard/admin/product/product-1"
+    );
   });
 
   it("displays product images correctly", async () => {
@@ -102,6 +132,9 @@ describe("Products Component", () => {
     await waitFor(() => screen.getByText("Product 1"));
 
     const productImage = screen.getByAltText("Product 1");
-    expect(productImage).toHaveAttribute("src", "/api/v1/product/product-photo/prod1");
+    expect(productImage).toHaveAttribute(
+      "src",
+      "/api/v1/product/product-photo/prod1"
+    );
   });
 });
