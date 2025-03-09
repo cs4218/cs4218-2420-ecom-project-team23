@@ -25,9 +25,9 @@ module.exports = {
     "<rootDir>/client/src/hooks/*.test.js",
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/pages/user/*.test.js",
-    "<rootDir>/client/src/pages/*.test.js",
+    "<rootDir>/client/src/pages/*.test.js"
   ],
-
+  
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
