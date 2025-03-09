@@ -10,7 +10,6 @@ import {
   getAllOrdersController,
   orderStatusController,
 } from "./authController";
-import userModel from "../models/userModel";
 import { hashPassword, comparePassword } from "../helpers/authHelper";
 import userModel from "../models/userModel";
 import orderModel from "../models/orderModel";
@@ -562,14 +561,14 @@ describe("Update Profile Controller Test", () => {
       req.body.password,
       defaultUser.password
     );
-    expect(hashPassword).not.toHaveBeenCalled();
+    expect(hashPassword).toHaveBeenCalledWith(req.body.newPassword);
     expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
       defaultUser._id,
       {
-        name: defaultUser.name,
+        name: req.body.name,
         password: defaultUser.password,
         phone: updatedUserData.phone,
-        address: defaultUser.address,
+        address: req.body.address,
       },
       { new: true }
     );
@@ -582,21 +581,21 @@ describe("Update Profile Controller Test", () => {
   });
 
   it("should return an error if password is shorter than 6 characters", async () => {
-      req.body.newPassword = "new";
+    req.body.newPassword = "new";
 
-      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-      comparePassword.mockResolvedValue(true);
+    userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+    comparePassword.mockResolvedValue(true);
 
-      await updateProfileController(req, res);
+    await updateProfileController(req, res);
 
-      expect(userModel.findOne).toHaveBeenCalledWith({
-        email: req.body.email,
-      });
-      expect(comparePassword).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Password should be at least 6 character long",
-      });
+    expect(userModel.findOne).toHaveBeenCalledWith({
+      email: req.body.email,
+    });
+    expect(comparePassword).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Password should be at least 6 character long",
+    });
   });
 
   it("should update only provided fields and retain existing values", async () => {
@@ -607,7 +606,7 @@ describe("Update Profile Controller Test", () => {
     hashPassword.mockResolvedValue(defaultUser.password);
     userModel.findByIdAndUpdate = jest
       .fn()
-      .mockResolvedValue({ ...expectedUpdatedUser });
+      .mockResolvedValue({ ...defaultUser, name: "Updated Name" });
 
     await updateProfileController(req, res);
 
@@ -652,439 +651,438 @@ describe("Update Profile Controller Test", () => {
     Via Exhaustive Testing: 96 testcases
     Via Pairwise Testing: 11 testcases
   */
-    describe("Given Valid Profile Inputs should update profile and return 201", () => {
-      it("return 201 given valid email, valid password, empty newPassword, empty name, empty address, non-empty phone", async () => {
-        req.body = {
-          ...req.body,
-          newPassword: "",
-          name: "",
-          address: "",
-        };
-  
-        const expectedUpdatedUser = {
-          ...defaultUser,
+  describe("Given Valid Profile Inputs should update profile and return 201", () => {
+    it("return 201 given valid email, valid password, empty newPassword, empty name, empty address, non-empty phone", async () => {
+      req.body = {
+        ...req.body,
+        newPassword: "",
+        name: "",
+        address: "",
+      };
+
+      const expectedUpdatedUser = {
+        ...defaultUser,
+        phone: updatedUserData.phone,
+      };
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+      hashPassword.mockResolvedValue(defaultUser.password);
+      userModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue({ ...expectedUpdatedUser });
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        defaultUser.password
+      );
+      expect(hashPassword).not.toHaveBeenCalled();
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        defaultUser._id,
+        {
+          name: defaultUser.name,
+          password: defaultUser.password,
           phone: updatedUserData.phone,
-        };
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-        hashPassword.mockResolvedValue(defaultUser.password);
-        userModel.findByIdAndUpdate = jest
-          .fn()
-          .mockResolvedValue({ ...expectedUpdatedUser });
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
-        expect(comparePassword).toHaveBeenCalledWith(
-          req.body.password,
-          defaultUser.password
-        );
-        expect(hashPassword).not.toHaveBeenCalled();
-        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-          defaultUser._id,
-          {
-            name: defaultUser.name,
-            password: defaultUser.password,
-            phone: updatedUserData.phone,
-            address: defaultUser.address,
-          },
-          { new: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.send).toHaveBeenCalledWith({
-          success: true,
-          message: "Profile Updated Successfully",
-          updatedUser: expectedUpdatedUser,
-        });
-      });
-  
-      it("return 201 given valid email, valid password, empty newPassword, empty name, non-empty address, empty phone", async () => {
-        req.body = {
-          ...req.body,
-          newPassword: "",
-          name: "",
-          phone: "",
-        };
-  
-        const expectedUpdatedUser = {
-          ...defaultUser,
-          address: updatedUserData.address,
-        };
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-        hashPassword.mockResolvedValue(defaultUser.password);
-        userModel.findByIdAndUpdate = jest
-          .fn()
-          .mockResolvedValue({ ...expectedUpdatedUser });
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
-        expect(comparePassword).toHaveBeenCalledWith(
-          req.body.password,
-          defaultUser.password
-        );
-        expect(hashPassword).not.toHaveBeenCalled();
-        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-          defaultUser._id,
-          {
-            name: defaultUser.name,
-            password: defaultUser.password,
-            phone: defaultUser.phone,
-            address: updatedUserData.address,
-          },
-          { new: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.send).toHaveBeenCalledWith({
-          success: true,
-          message: "Profile Updated Successfully",
-          updatedUser: expectedUpdatedUser,
-        });
-      });
-  
-      it("return 201 given valid email, valid password, empty newPassword, non-empty name, empty address, non-empty phone", async () => {
-        req.body = {
-          ...req.body,
-          newPassword: "",
-          address: "",
-        };
-  
-        const expectedUpdatedUser = {
-          ...defaultUser,
-          name: updatedUserData.name,
-          phone: updatedUserData.phone,
-        };
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-        hashPassword.mockResolvedValue(defaultUser.password);
-        userModel.findByIdAndUpdate = jest
-          .fn()
-          .mockResolvedValue({ ...expectedUpdatedUser });
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
-        expect(comparePassword).toHaveBeenCalledWith(
-          req.body.password,
-          defaultUser.password
-        );
-        expect(hashPassword).not.toHaveBeenCalled();
-        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-          defaultUser._id,
-          {
-            name: updatedUserData.name,
-            password: defaultUser.password,
-            phone: updatedUserData.phone,
-            address: defaultUser.address,
-          },
-          { new: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.send).toHaveBeenCalledWith({
-          success: true,
-          message: "Profile Updated Successfully",
-          updatedUser: expectedUpdatedUser,
-        });
-      });
-  
-      it("return 201 given valid email, valid password, empty newPassword, non-empty name, non-empty address, empty phone", async () => {
-        req.body = {
-          ...req.body,
-          newPassword: "",
-          phone: "",
-        };
-  
-        const expectedUpdatedUser = {
-          ...defaultUser,
-          name: updatedUserData.name,
-          address: updatedUserData.address,
-        };
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-        hashPassword.mockResolvedValue(defaultUser.password);
-        userModel.findByIdAndUpdate = jest
-          .fn()
-          .mockResolvedValue({ ...expectedUpdatedUser });
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
-        expect(comparePassword).toHaveBeenCalledWith(
-          req.body.password,
-          defaultUser.password
-        );
-        expect(hashPassword).not.toHaveBeenCalled();
-        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-          defaultUser._id,
-          {
-            name: updatedUserData.name,
-            password: defaultUser.password,
-            phone: defaultUser.phone,
-            address: updatedUserData.address,
-          },
-          { new: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.send).toHaveBeenCalledWith({
-          success: true,
-          message: "Profile Updated Successfully",
-          updatedUser: expectedUpdatedUser,
-        });
-      });
-  
-      it("return 201 given valid email, valid password, non-empty newPassword, empty name, empty address, non-empty phone", async () => {
-        req.body = {
-          ...req.body,
-          name: "",
-          address: "",
-        };
-  
-        const expectedUpdatedUser = {
-          ...defaultUser,
-          password: updatedUserData.password,
-          phone: updatedUserData.phone,
-        };
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-        hashPassword.mockResolvedValue(updatedUserData.password);
-  
-        userModel.findByIdAndUpdate = jest
-          .fn()
-          .mockResolvedValue({ ...expectedUpdatedUser });
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
-        expect(comparePassword).toHaveBeenCalledWith(
-          req.body.password,
-          defaultUser.password
-        );
-        expect(hashPassword).toHaveBeenCalledWith(req.body.newPassword);
-  
-        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-          defaultUser._id,
-          {
-            name: defaultUser.name,
-            password: updatedUserData.password,
-            phone: updatedUserData.phone,
-            address: defaultUser.address,
-          },
-          { new: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.send).toHaveBeenCalledWith({
-          success: true,
-          message: "Profile Updated Successfully",
-          updatedUser: expectedUpdatedUser,
-        });
-      });
-  
-      it("return 201 given valid email, valid password, non-empty newPassword, empty name, non-empty address, empty phone", async () => {
-        req.body = {
-          ...req.body,
-          name: "",
-          phone: "",
-        };
-  
-        const expectedUpdatedUser = {
-          ...defaultUser,
-          password: updatedUserData.password,
-          address: updatedUserData.address,
-        };
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-        hashPassword.mockResolvedValue(updatedUserData.password);
-        userModel.findByIdAndUpdate = jest
-          .fn()
-          .mockResolvedValue({ ...expectedUpdatedUser });
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
-        expect(comparePassword).toHaveBeenCalledWith(
-          req.body.password,
-          defaultUser.password
-        );
-        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-          defaultUser._id,
-          {
-            name: defaultUser.name,
-            password: updatedUserData.password,
-            phone: defaultUser.phone,
-            address: updatedUserData.address,
-          },
-          { new: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.send).toHaveBeenCalledWith({
-          success: true,
-          message: "Profile Updated Successfully",
-          updatedUser: expectedUpdatedUser,
-        });
-      });
-  
-      it("return 201 given valid email, valid password, non-empty newPassword, non-empty name, empty address, non-empty phone", async () => {
-        req.body = {
-          ...req.body,
-          address: "",
-        };
-  
-        const expectedUpdatedUser = {
-          ...defaultUser,
-          name: updatedUserData.name,
-          password: updatedUserData.password,
-          phone: updatedUserData.phone,
-        };
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-        hashPassword.mockResolvedValue(updatedUserData.password);
-        userModel.findByIdAndUpdate = jest
-          .fn()
-          .mockResolvedValue({ ...expectedUpdatedUser });
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
-        expect(comparePassword).toHaveBeenCalledWith(
-          req.body.password,
-          defaultUser.password
-        );
-        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-          defaultUser._id,
-          {
-            name: updatedUserData.name,
-            password: updatedUserData.password,
-            phone: updatedUserData.phone,
-            address: defaultUser.address,
-          },
-          { new: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.send).toHaveBeenCalledWith({
-          success: true,
-          message: "Profile Updated Successfully",
-          updatedUser: expectedUpdatedUser,
-        });
-      });
-  
-      it("return 201 given valid email, valid password, non-empty newPassword, non-empty name, non-empty address, empty phone", async () => {
-        req.body = {
-          ...req.body,
-          phone: "",
-        };
-  
-        const expectedUpdatedUser = {
-          ...defaultUser,
-          name: updatedUserData.name,
-          password: updatedUserData.password,
-          address: updatedUserData.address,
-        };
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-        hashPassword.mockResolvedValue(updatedUserData.password);
-        userModel.findByIdAndUpdate = jest
-          .fn()
-          .mockResolvedValue({ ...expectedUpdatedUser });
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
-        expect(comparePassword).toHaveBeenCalledWith(
-          req.body.password,
-          defaultUser.password
-        );
-        expect(hashPassword).toHaveBeenCalledWith(req.body.newPassword);
-        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-          defaultUser._id,
-          {
-            name: updatedUserData.name,
-            password: updatedUserData.password,
-            phone: defaultUser.phone,
-            address: updatedUserData.address,
-          },
-          { new: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.send).toHaveBeenCalledWith({
-          success: true,
-          message: "Profile Updated Successfully",
-          updatedUser: expectedUpdatedUser,
-        });
-      });
-  
-      it("return 500 if internal server error", async () => {
-        const expectedError = new Error("error");
-  
-        userModel.findOne = jest.fn().mockRejectedValue(expectedError);
-  
-        await updateProfileController(req, res);
-  
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.send).toHaveBeenCalledWith({
-          success: false,
-          message: "Error while updating profile",
-          error: expectedError,
-        });
+          address: defaultUser.address,
+        },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "Profile Updated Successfully",
+        updatedUser: expectedUpdatedUser,
       });
     });
-  
-    describe("Given Invalid Profile Inputs", () => {
-      it("should return 200 if invalid email", async () => {
-        req.body.email = "invalid-email";
-  
-        userModel.findOne = jest.fn().mockResolvedValue(null);
-  
-        await updateProfileController(req, res);
-  
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith({
-          error: "Unauthorized to update. Invalid Email or Password",
-        });
-      });
-  
-      it("should return 200 if invalid password", async () => {
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(false);
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({
-          email: defaultUser.email,
-        });
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith({
-          error: "Unauthorized to update. Invalid Email or Password",
-        });
-      });
-  
-      it("should return 200 if invalid new password", async () => {
-        req.body.newPassword = "new";
-  
-        userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
-        comparePassword.mockResolvedValue(true);
-  
-        await updateProfileController(req, res);
-  
-        expect(userModel.findOne).toHaveBeenCalledWith({
-          email: defaultUser.email,
-        });
-        expect(comparePassword).toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith({
-          error: "Password should be at least 6 character long",
-        });
-      });
+
+    it("return 201 given valid email, valid password, empty newPassword, empty name, non-empty address, empty phone", async () => {
+      req.body = {
+        ...req.body,
+        newPassword: "",
+        name: "",
+        phone: "",
+      };
+
+      const expectedUpdatedUser = {
+        ...defaultUser,
+        address: updatedUserData.address,
+      };
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+      hashPassword.mockResolvedValue(defaultUser.password);
+      userModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue({ ...expectedUpdatedUser });
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        defaultUser.password
+      );
+      expect(hashPassword).not.toHaveBeenCalled();
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        defaultUser._id,
+        {
+          name: defaultUser.name,
+          password: defaultUser.password,
+          phone: defaultUser.phone,
+          address: updatedUserData.address,
+        },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "Profile Updated Successfully",
+        updatedUser: expectedUpdatedUser,
       });
     });
+
+    it("return 201 given valid email, valid password, empty newPassword, non-empty name, empty address, non-empty phone", async () => {
+      req.body = {
+        ...req.body,
+        newPassword: "",
+        address: "",
+      };
+
+      const expectedUpdatedUser = {
+        ...defaultUser,
+        name: updatedUserData.name,
+        phone: updatedUserData.phone,
+      };
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+      hashPassword.mockResolvedValue(defaultUser.password);
+      userModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue({ ...expectedUpdatedUser });
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        defaultUser.password
+      );
+      expect(hashPassword).not.toHaveBeenCalled();
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        defaultUser._id,
+        {
+          name: updatedUserData.name,
+          password: defaultUser.password,
+          phone: updatedUserData.phone,
+          address: defaultUser.address,
+        },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "Profile Updated Successfully",
+        updatedUser: expectedUpdatedUser,
+      });
+    });
+
+    it("return 201 given valid email, valid password, empty newPassword, non-empty name, non-empty address, empty phone", async () => {
+      req.body = {
+        ...req.body,
+        newPassword: "",
+        phone: "",
+      };
+
+      const expectedUpdatedUser = {
+        ...defaultUser,
+        name: updatedUserData.name,
+        address: updatedUserData.address,
+      };
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+      hashPassword.mockResolvedValue(defaultUser.password);
+      userModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue({ ...expectedUpdatedUser });
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        defaultUser.password
+      );
+      expect(hashPassword).not.toHaveBeenCalled();
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        defaultUser._id,
+        {
+          name: updatedUserData.name,
+          password: defaultUser.password,
+          phone: defaultUser.phone,
+          address: updatedUserData.address,
+        },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "Profile Updated Successfully",
+        updatedUser: expectedUpdatedUser,
+      });
+    });
+
+    it("return 201 given valid email, valid password, non-empty newPassword, empty name, empty address, non-empty phone", async () => {
+      req.body = {
+        ...req.body,
+        name: "",
+        address: "",
+      };
+
+      const expectedUpdatedUser = {
+        ...defaultUser,
+        password: updatedUserData.password,
+        phone: updatedUserData.phone,
+      };
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+      hashPassword.mockResolvedValue(updatedUserData.password);
+
+      userModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue({ ...expectedUpdatedUser });
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        defaultUser.password
+      );
+      expect(hashPassword).toHaveBeenCalledWith(req.body.newPassword);
+
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        defaultUser._id,
+        {
+          name: defaultUser.name,
+          password: updatedUserData.password,
+          phone: updatedUserData.phone,
+          address: defaultUser.address,
+        },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "Profile Updated Successfully",
+        updatedUser: expectedUpdatedUser,
+      });
+    });
+
+    it("return 201 given valid email, valid password, non-empty newPassword, empty name, non-empty address, empty phone", async () => {
+      req.body = {
+        ...req.body,
+        name: "",
+        phone: "",
+      };
+
+      const expectedUpdatedUser = {
+        ...defaultUser,
+        password: updatedUserData.password,
+        address: updatedUserData.address,
+      };
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+      hashPassword.mockResolvedValue(updatedUserData.password);
+      userModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue({ ...expectedUpdatedUser });
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        defaultUser.password
+      );
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        defaultUser._id,
+        {
+          name: defaultUser.name,
+          password: updatedUserData.password,
+          phone: defaultUser.phone,
+          address: updatedUserData.address,
+        },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "Profile Updated Successfully",
+        updatedUser: expectedUpdatedUser,
+      });
+    });
+
+    it("return 201 given valid email, valid password, non-empty newPassword, non-empty name, empty address, non-empty phone", async () => {
+      req.body = {
+        ...req.body,
+        address: "",
+      };
+
+      const expectedUpdatedUser = {
+        ...defaultUser,
+        name: updatedUserData.name,
+        password: updatedUserData.password,
+        phone: updatedUserData.phone,
+      };
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+      hashPassword.mockResolvedValue(updatedUserData.password);
+      userModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue({ ...expectedUpdatedUser });
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        defaultUser.password
+      );
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        defaultUser._id,
+        {
+          name: updatedUserData.name,
+          password: updatedUserData.password,
+          phone: updatedUserData.phone,
+          address: defaultUser.address,
+        },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "Profile Updated Successfully",
+        updatedUser: expectedUpdatedUser,
+      });
+    });
+
+    it("return 201 given valid email, valid password, non-empty newPassword, non-empty name, non-empty address, empty phone", async () => {
+      req.body = {
+        ...req.body,
+        phone: "",
+      };
+
+      const expectedUpdatedUser = {
+        ...defaultUser,
+        name: updatedUserData.name,
+        password: updatedUserData.password,
+        address: updatedUserData.address,
+      };
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+      hashPassword.mockResolvedValue(updatedUserData.password);
+      userModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue({ ...expectedUpdatedUser });
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+      expect(comparePassword).toHaveBeenCalledWith(
+        req.body.password,
+        defaultUser.password
+      );
+      expect(hashPassword).toHaveBeenCalledWith(req.body.newPassword);
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        defaultUser._id,
+        {
+          name: updatedUserData.name,
+          password: updatedUserData.password,
+          phone: defaultUser.phone,
+          address: updatedUserData.address,
+        },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: "Profile Updated Successfully",
+        updatedUser: expectedUpdatedUser,
+      });
+    });
+
+    it("return 500 if internal server error", async () => {
+      const expectedError = new Error("error");
+
+      userModel.findOne = jest.fn().mockRejectedValue(expectedError);
+
+      await updateProfileController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: "Error while updating profile",
+        error: expectedError,
+      });
+    });
+  });
+
+  describe("Given Invalid Profile Inputs", () => {
+    it("should return 200 if invalid email", async () => {
+      req.body.email = "invalid-email";
+
+      userModel.findOne = jest.fn().mockResolvedValue(null);
+
+      await updateProfileController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Unauthorized to update. Invalid Email or Password",
+      });
+    });
+
+    it("should return 200 if invalid password", async () => {
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(false);
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({
+        email: defaultUser.email,
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Unauthorized to update. Invalid Email or Password",
+      });
+    });
+
+    it("should return 200 if invalid new password", async () => {
+      req.body.newPassword = "new";
+
+      userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+      comparePassword.mockResolvedValue(true);
+
+      await updateProfileController(req, res);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({
+        email: defaultUser.email,
+      });
+      expect(comparePassword).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Password should be at least 6 character long",
+      });
+    });
+  });
 });
 
 describe("Get Orders Controller Test", () => {
