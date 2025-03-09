@@ -6,11 +6,16 @@ module.exports = {
   testEnvironment: "node",
 
   // which test to run
-  testMatch: ["<rootDir>/config/*.test.js", "<rootDir>/models/*.test.js"],
+  testMatch: ["<rootDir>/controllers/*.test.js", "<rootDir>/models/*.test.js", "<rootDir>/config/*.test.js"],
+
+  // to remove reference error
+  transform: {
+    "^.+\\.jsx?$": "babel-jest",
+  },
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["config/db.js", "models/userModel.js"],
+  collectCoverageFrom: ["controllers/**", "models/**", "config/db.js", "models/userModel.js"],
   coverageThreshold: {
     global: {
       lines: 0,
@@ -18,3 +23,5 @@ module.exports = {
     },
   },
 };
+
+

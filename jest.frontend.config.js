@@ -20,21 +20,24 @@ module.exports = {
   transformIgnorePatterns: ["/node_modules/(?!(styleMock\\.js)$)"],
 
   // only run these tests
-  testMatch: ["<rootDir>/client/src/**/*.test.js"],
+  testMatch: [
+    "<rootDir>/client/src/context/*.test.js",
+    "<rootDir>/client/src/hooks/*.test.js",
+    "<rootDir>/client/src/pages/Auth/*.test.js",
+    "<rootDir>/client/src/pages/user/*.test.js",
+    "<rootDir>/client/src/pages/*.test.js",
+    "<rootDir>/client/src/components/**/*.test.js",
+
+    "<rootDir>/client/src/**/*.test.js"
+  ],
 
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
-    "client/src/components/Routes/Private.js",
-    "client/src/components/UserMenu.js",
-    "client/src/pages/user/Dashboard.js",
-    "client/src/components/Footer.js",
-    "client/src/components/Header.js",
-    "client/src/components/Layout.js",
-    "client/src/components/Spinner.js",
-    "client/src/pages/About.js",
-    "client/src/pages/Pagenotfound.js",
-    "client/src/pages/HomePage.js",
+    "client/src/context/**",
+    "client/src/hooks/**",
+    "client/src/pages/**",
+    "client/src/components/**",
   ],
   coverageThreshold: {
     global: {
