@@ -18,7 +18,7 @@ const Header = () => {
       token: "",
     });
     localStorage.removeItem("auth");
-    toast.success("Logout Successfully");
+    toast.success("Logout Successful");
   };
   return (
     <>
@@ -60,8 +60,8 @@ const Header = () => {
                       All Categories
                     </Link>
                   </li>
-                  {categories?.map((c) => (
-                    <li>
+                  {categories?.map((c, idx) => (
+                    <li key={idx}>
                       <Link
                         className="dropdown-item"
                         to={`/category/${c.slug}`}
