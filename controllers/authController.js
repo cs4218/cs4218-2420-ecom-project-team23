@@ -23,6 +23,8 @@ export const registerController = async (req, res) => {
 
     if (!password) {
       return res.send({ message: "Password is Required" });
+    } else if (password.length < 6) {
+      return res.send({ message: "Password must be at least 6 characters" });
     }
 
     if (!phone) {
@@ -146,7 +148,12 @@ export const forgotPasswordController = async (req, res) => {
     }
     if (!newPassword) {
       return res.status(200).send({ message: "New Password is required" });
+    } else if (newPassword.length < 6) {
+      return res
+        .status(200)
+        .send({ message: "New Password must be at least 6 characters" });
     }
+
     //check
     const user = await userModel.findOne({ email, answer });
     //validation
@@ -202,6 +209,13 @@ export const updateProfileController = async (req, res) => {
     if (newPassword && newPassword.length < 6) {
       return res.status(200).json({
         error: "Password should be at least 6 character long",
+      });
+    }
+
+    if (phone && !phoneRegex.test(phone)) {
+      return res.status(200).json({
+        error:
+          "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits]",
       });
     }
 
