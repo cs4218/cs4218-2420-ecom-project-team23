@@ -228,7 +228,7 @@ describe("Login Controller Test", () => {
     it("should login user and return 200 and a token", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(expectedUser);
       comparePassword.mockResolvedValue(true);
-      JWT.sign.mockResolvedValue(expectedToken);
+      JWT.sign.mockReturnValue(expectedToken);
 
       await loginController(req, res);
 
