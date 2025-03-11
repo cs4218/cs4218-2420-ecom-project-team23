@@ -65,12 +65,13 @@ test.describe("should trigger toaster on invalid inputs", () => {
     await currentPasswordInput.fill("wrongPassword");
 
     await page.getByRole("button", { name: "UPDATE" }).click();
-    await page.waitForTimeout(1000);
 
     expect(page.getByText("Unauthorized to update.")).toBeVisible();
   });
 
   test("should trigger toaster on invalid new password", async ({ page }) => {
+    await fillDefaultData(page);
+
     const newPasswordInput = page.getByRole("textbox", {
       name: "Enter Your New Password",
     });
@@ -78,13 +79,14 @@ test.describe("should trigger toaster on invalid inputs", () => {
     await newPasswordInput.fill("short");
 
     await page.getByRole("button", { name: "UPDATE" }).click();
-    await page.waitForTimeout(1000);
 
     expect(page.getByText("Password should be at least 6")).toBeVisible();
   });
 
   test("should trigger toaster on invalid new phone", async ({ page }) => {
-    const phoneInput = page.page.getByRole("textbox", {
+    await fillDefaultData(page);
+
+    const phoneInput = page.getByRole("textbox", {
       name: "Enter Your Phone",
     });
 
@@ -92,9 +94,8 @@ test.describe("should trigger toaster on invalid inputs", () => {
     await phoneInput.fill("9123");
 
     await page.getByRole("button", { name: "UPDATE" }).click();
-    await page.waitForTimeout(1000);
 
-    expect(getByText("Oops! Please enter a valid")).toBeVisible();
+    expect(page.getByText("Oops! Please enter a valid")).toBeVisible();
   });
 });
 
@@ -108,7 +109,7 @@ async function login(page) {
   await page
     .getByRole("textbox", { name: "Enter Your Password" })
     .fill("example");
-
+  await page.getByRole("button", { name: "LOGIN" }).click();
   await page.waitForURL("http://localhost:3000/");
 }
 
@@ -125,7 +126,6 @@ async function fillDefaultData(page) {
   const currentPasswordInput = page.getByRole("textbox", {
     name: "Enter Your Current Password",
   });
-
   await currentPasswordInput.click();
   await currentPasswordInput.fill("example");
 }

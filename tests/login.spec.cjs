@@ -34,7 +34,7 @@ test.describe("Routing and Logging In", () => {
   test("should navigate to Forgot Password Page", async ({ page }) => {
     await page.getByRole("button", { name: "Forgot Password" }).click();
 
-    await page.waitForURL("**/forgot-password");
+    await page.waitForURL("http://localhost:3000/forgot-password");
 
     const forgotPasswordPage = page.getByRole("heading", {
       name: "Forgot Password Function is coming soon!",
