@@ -3,41 +3,30 @@ import request from "supertest";
 import express from "express";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import userModel from "../models/userModel";
-import {
-  registerController,
-  loginController,
-  forgotPasswordController,
-  testController,
-  updateProfileController,
-} from "./authController";
+import authRoutes from "../routes/authRoute";
 import { hashPassword, comparePassword } from "../helpers/authHelper";
-import { requireSignIn } from "../middlewares/authMiddleware";
-import JWT from "jsonwebtoken";
 
-jest.mock("jsonwebtoken");
+const validToken = "validToken";
 
-jest.mock("../middlewares/authMiddleware", () => ({
-  requireSignIn: (req, res, next) => {
-    if (req.headers.authorization) {
-      next();
+// Supress Console logs
+jest.spyOn(console, "log").mockImplementation(() => {});
+
+jest.mock("jsonwebtoken", () => ({
+  verify: jest.fn().mockImplementation((token) => {
+    if (token == validToken) {
+      return {
+        _id: "67d0745ec9e0ef3de7eae0e8",
+      };
     } else {
-      const error = new Error("Unauthorized User");
-      res.status(500).send({
-        success: false,
-        error,
-        message: error.message,
-      });
+      return undefined;
     }
-  },
+  }),
+  sign: jest.fn().mockImplementation(() => validToken),
 }));
 
 const app = express();
 app.use(express.json());
-app.put("/register", registerController);
-app.put("/login", loginController);
-app.put("/forgotPassword", forgotPasswordController);
-app.put("/test", requireSignIn, testController);
-app.put("/profile", requireSignIn, updateProfileController);
+app.use("/api/v1/auth", authRoutes);
 
 describe("Controller Tests", () => {
   let mongoServer;
@@ -59,7 +48,6 @@ describe("Controller Tests", () => {
   });
 
   afterEach(async () => {
-    jest.restoreAllMocks();
     await userModel.deleteMany();
   });
 
@@ -75,7 +63,9 @@ describe("Controller Tests", () => {
           answer: "ans",
         };
 
-        const res = await request(app).put("/register").send(userData);
+        const res = await request(app)
+          .post("/api/v1/auth/register")
+          .send(userData);
 
         // Check that user is actually saved in the database
         const savedUser = await userModel.findOne({ email: userData.email });
@@ -134,7 +124,9 @@ describe("Controller Tests", () => {
           answer: "ans",
         };
 
-        const res = await request(app).put("/register").send(userData);
+        const res = await request(app)
+          .post("/api/v1/auth/register")
+          .send(userData);
 
         // Check that new User is not saved due to existing email
         expect(res.statusCode).toEqual(200);
@@ -148,8 +140,6 @@ describe("Controller Tests", () => {
 
     describe("Login Controller Test", () => {
       it("should login existing user successfully given valid credentials", async () => {
-        JWT.sign.mockReturnValue("validToken");
-
         const hashedPassword = await hashPassword("password");
 
         const mockUser = new userModel({
@@ -169,7 +159,9 @@ describe("Controller Tests", () => {
           password: "password",
         };
 
-        const res = await request(app).put("/login").send(loginData);
+        const res = await request(app)
+          .post("/api/v1/auth/login")
+          .send(loginData);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty("success", true);
@@ -194,7 +186,9 @@ describe("Controller Tests", () => {
           password: "password",
         };
 
-        const res = await request(app).put("/login").send(loginData);
+        const res = await request(app)
+          .post("/api/v1/auth/login")
+          .send(loginData);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty("success", false);
@@ -221,7 +215,9 @@ describe("Controller Tests", () => {
           password: "wrongPassword",
         };
 
-        const res = await request(app).put("/login").send(loginData);
+        const res = await request(app)
+          .post("/api/v1/auth/login")
+          .send(loginData);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty("success", false);
@@ -248,7 +244,9 @@ describe("Controller Tests", () => {
           newPassword: "newPassword",
         };
 
-        const res = await request(app).put("/forgotPassword").send(userData);
+        const res = await request(app)
+          .post("/api/v1/auth/forgot-password")
+          .send(userData);
 
         const updatedUser = await userModel.findById(savedUser._id);
         await expect(
@@ -279,7 +277,9 @@ describe("Controller Tests", () => {
           newPassword: "newPassword",
         };
 
-        const res = await request(app).put("/forgotPassword").send(userData);
+        const res = await request(app)
+          .post("/api/v1/auth/forgot-password")
+          .send(userData);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty("success", false);
@@ -293,7 +293,9 @@ describe("Controller Tests", () => {
           newPassword: "newPassword",
         };
 
-        const res = await request(app).put("/forgotPassword").send(userData);
+        const res = await request(app)
+          .post("/api/v1/auth/forgot-password")
+          .send(userData);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty("success", false);
@@ -303,18 +305,31 @@ describe("Controller Tests", () => {
   });
 
   describe("Protected Routes Controller Test", () => {
-    it("should return Unauthorized User if no token is provided", async () => {
-      const res = await request(app).put("/test");
+    it("should return Error in admin middleware if undefined user", async () => {
+      const res = await request(app).get("/api/v1/auth/test");
 
       expect(res.statusCode).toEqual(500);
       expect(res.body).toHaveProperty("success", false);
-      expect(res.body).toHaveProperty("message", "Unauthorized User");
+      expect(res.body).toHaveProperty("message", "Error in admin middleware");
     });
 
-    it("should return Protected Route with token", async () => {
+    it("should return Protected Route with token if admin", async () => {
+      const hashedPassword = await hashPassword("password");
+
+      const mockUser = await new userModel({
+        _id: new mongoose.Types.ObjectId("67d0745ec9e0ef3de7eae0e8"),
+        name: "John Doe",
+        email: "example@gmail.com",
+        password: hashedPassword,
+        phone: "91234567",
+        address: "example address",
+        answer: "ans",
+        role: "1",
+      }).save();
+
       const res = await request(app)
-        .put("/test")
-        .set("Authorization", `Bearer token`);
+        .get("/api/v1/auth/test")
+        .set("Authorization", validToken);
 
       expect(res.statusCode).toEqual(200);
       expect(res.text).toEqual("Protected Routes");
@@ -346,9 +361,9 @@ describe("Controller Tests", () => {
         };
 
         const res = await request(app)
-          .put("/profile")
+          .put("/api/v1/auth/profile")
           .send(data)
-          .set("Authorization", "Bearer token");
+          .set("Authorization", validToken);
 
         // Check that user is updated correctly
         const updatedUser = await userModel.findById(mockUser._id);
@@ -397,9 +412,9 @@ describe("Controller Tests", () => {
         };
 
         await request(app)
-          .put("/profile")
+          .put("/api/v1/auth/profile")
           .send(data)
-          .set("Authorization", "Bearer token");
+          .set("Authorization", validToken);
 
         const updatedUser = await userModel.findById(mockUser._id);
         expect(updatedUser).toBeDefined();
@@ -438,9 +453,9 @@ describe("Controller Tests", () => {
         };
 
         const res = await request(app)
-          .put("/profile")
+          .put("/api/v1/auth/profile")
           .send(data)
-          .set("Authorization", "Bearer token");
+          .set("Authorization", validToken);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty(

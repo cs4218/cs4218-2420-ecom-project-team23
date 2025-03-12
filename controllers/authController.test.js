@@ -21,6 +21,9 @@ jest.mock("../models/orderModel.js");
 
 jest.mock("../helpers/authHelper.js");
 
+// Supress console.log during testing
+jest.spyOn(console, "log").mockImplementation(() => {});
+
 describe("Register Controller Test", () => {
   let req, res;
 
