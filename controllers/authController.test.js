@@ -1214,7 +1214,7 @@ describe("Get All Orders Controller", () => {
     expect(orderModel.find).toHaveBeenCalledWith({});
     expect(mockPopulate1).toHaveBeenCalledWith("products", "-photo");
     expect(mockPopulate2).toHaveBeenCalledWith("buyer", "name");
-    expect(mockSort).toHaveBeenCalledWith({ createdAt: "-1" });
+    expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
     expect(res.json).toHaveBeenCalledWith(mockOrders);
   });
 
