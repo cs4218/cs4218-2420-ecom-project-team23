@@ -181,6 +181,8 @@ const CartPage = () => {
                       onInstance={(instance) => setInstance(instance)}
                     />
 
+                    <div>Paypal option is currently unavailable as product is still in development</div>
+
                     <button
                       className="btn btn-primary"
                       onClick={handlePayment}
