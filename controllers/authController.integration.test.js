@@ -305,34 +305,36 @@ describe("Controller Tests", () => {
   });
 
   describe("Protected Routes Controller Test", () => {
-    it("should return Error in admin middleware if undefined user", async () => {
-      const res = await request(app).get("/api/v1/auth/test");
+    describe("Test Controller Test", () => {
+      it("should return Error in admin middleware if undefined user", async () => {
+        const res = await request(app).get("/api/v1/auth/test");
 
-      expect(res.statusCode).toEqual(500);
-      expect(res.body).toHaveProperty("success", false);
-      expect(res.body).toHaveProperty("message", "Error in admin middleware");
-    });
+        expect(res.statusCode).toEqual(500);
+        expect(res.body).toHaveProperty("success", false);
+        expect(res.body).toHaveProperty("message", "Error in admin middleware");
+      });
 
-    it("should return Protected Route with token if admin", async () => {
-      const hashedPassword = await hashPassword("password");
+      it("should return Protected Route with token if admin", async () => {
+        const hashedPassword = await hashPassword("password");
 
-      const mockUser = await new userModel({
-        _id: new mongoose.Types.ObjectId("67d0745ec9e0ef3de7eae0e8"),
-        name: "John Doe",
-        email: "example@gmail.com",
-        password: hashedPassword,
-        phone: "91234567",
-        address: "example address",
-        answer: "ans",
-        role: "1",
-      }).save();
+        const mockUser = await new userModel({
+          _id: new mongoose.Types.ObjectId("67d0745ec9e0ef3de7eae0e8"),
+          name: "John Doe",
+          email: "example@gmail.com",
+          password: hashedPassword,
+          phone: "91234567",
+          address: "example address",
+          answer: "ans",
+          role: "1",
+        }).save();
 
-      const res = await request(app)
-        .get("/api/v1/auth/test")
-        .set("Authorization", validToken);
+        const res = await request(app)
+          .get("/api/v1/auth/test")
+          .set("Authorization", validToken);
 
-      expect(res.statusCode).toEqual(200);
-      expect(res.text).toEqual("Protected Routes");
+        expect(res.statusCode).toEqual(200);
+        expect(res.text).toEqual("Protected Routes");
+      });
     });
 
     describe("Update Profile Controller Test", () => {
