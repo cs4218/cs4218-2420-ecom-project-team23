@@ -21,26 +21,26 @@ test("should display initial update profile form data", async ({ page }) => {
     name: "Enter Your Address",
   });
 
-  expect(formHeader).toBeVisible();
+  await expect(formHeader).toBeVisible();
 
-  expect(nameInput).toBeVisible();
-  expect(nameInput).toHaveValue("john doe");
+  await expect(nameInput).toBeVisible();
+  await expect(nameInput).toHaveValue("john doe");
 
-  expect(emailInput).toBeVisible();
-  expect(emailInput).toBeDisabled();
-  expect(emailInput).toHaveValue("example@gmail.com");
+  await expect(emailInput).toBeVisible();
+  await expect(emailInput).toBeDisabled();
+  await expect(emailInput).toHaveValue("example@gmail.com");
 
-  expect(currentPasswordInput).toBeVisible();
-  expect(currentPasswordInput).toHaveValue("");
+  await expect(currentPasswordInput).toBeVisible();
+  await expect(currentPasswordInput).toHaveValue("");
 
-  expect(newPasswordInput).toBeVisible();
-  expect(newPasswordInput).toHaveValue("");
+  await expect(newPasswordInput).toBeVisible();
+  await expect(newPasswordInput).toHaveValue("");
 
-  expect(phoneInput).toBeVisible();
-  expect(phoneInput).toHaveValue("91234583");
+  await expect(phoneInput).toBeVisible();
+  await expect(phoneInput).toHaveValue("91234583");
 
-  expect(addressInput).toBeVisible();
-  expect(addressInput).toHaveValue("example street");
+  await expect(addressInput).toBeVisible();
+  await expect(addressInput).toHaveValue("example street");
 });
 
 test.describe("should trigger toaster on successful update", () => {
@@ -48,9 +48,15 @@ test.describe("should trigger toaster on successful update", () => {
     await fillDefaultData(page);
 
     await page.getByRole("button", { name: "UPDATE" }).click();
-    await page.waitForTimeout(1000);
 
-    expect(page.getByText("Profile Updated Successfully")).toBeVisible();
+    const toaster = await page.waitForSelector(
+      "text=Profile Updated Successfully",
+      {
+        state: "visible",
+        timeout: 5000,
+      }
+    );
+    expect(await toaster.isVisible()).toBeTruthy();
   });
 });
 
@@ -66,7 +72,12 @@ test.describe("should trigger toaster on invalid inputs", () => {
 
     await page.getByRole("button", { name: "UPDATE" }).click();
 
-    expect(page.getByText("Unauthorized to update.")).toBeVisible();
+    const toaster = await page.waitForSelector("text=Unauthorized to update.", {
+      state: "visible",
+      timeout: 5000,
+    });
+
+    expect(await toaster.isVisible()).toBeTruthy();
   });
 
   test("should trigger toaster on invalid new password", async ({ page }) => {
@@ -80,7 +91,11 @@ test.describe("should trigger toaster on invalid inputs", () => {
 
     await page.getByRole("button", { name: "UPDATE" }).click();
 
-    expect(page.getByText("Password should be at least 6")).toBeVisible();
+    const toaster = await page.waitForSelector(
+      "text=Password should be at least 6",
+      { state: "visible", timeout: 5000 }
+    );
+    expect(await toaster.isVisible()).toBeTruthy();
   });
 
   test("should trigger toaster on invalid new phone", async ({ page }) => {
@@ -95,7 +110,14 @@ test.describe("should trigger toaster on invalid inputs", () => {
 
     await page.getByRole("button", { name: "UPDATE" }).click();
 
-    expect(page.getByText("Oops! Please enter a valid")).toBeVisible();
+    const toaster = await page.waitForSelector(
+      "text=Oops! Please enter a valid",
+      {
+        state: "visible",
+        timeout: 5000,
+      }
+    );
+    expect(await toaster.isVisible()).toBeTruthy();
   });
 });
 

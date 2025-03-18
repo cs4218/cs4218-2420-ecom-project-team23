@@ -15,7 +15,7 @@ test.describe("Routing and Logging In", () => {
     await page.waitForURL("http://localhost:3000/");
 
     const loginUserName = page.getByRole("button", { name: "john doe" });
-    expect(loginUserName).toBeVisible();
+    await expect(loginUserName).toBeVisible();
   });
 
   test("should navigate to login page on logout", async ({ page }) => {
@@ -28,7 +28,7 @@ test.describe("Routing and Logging In", () => {
     await page.waitForURL("http://localhost:3000/login");
 
     const loginTitle = page.getByRole("heading", { name: "LOGIN FORM" });
-    expect(loginTitle).toBeVisible();
+    await expect(loginTitle).toBeVisible();
   });
 
   test("should navigate to Forgot Password Page", async ({ page }) => {
@@ -39,7 +39,7 @@ test.describe("Routing and Logging In", () => {
     const forgotPasswordPage = page.getByRole("heading", {
       name: "Forgot Password Function is coming soon!",
     });
-    expect(forgotPasswordPage).toBeVisible();
+    await expect(forgotPasswordPage).toBeVisible();
   });
 });
 
@@ -53,7 +53,12 @@ test.describe("should trigger toaster on invalid inputs", () => {
       .fill("example@gmail.c");
 
     await page.getByRole("button", { name: "LOGIN" }).click();
-    expect(page.getByText("Invalid email or password")).toBeVisible();
+
+    const toaster = await page.waitForSelector(
+      "text=Invalid email or password",
+      { state: "visible", timeout: 5000 }
+    );
+    expect(await toaster.isVisible()).toBeTruthy();
   });
 
   test("should trigger toaster on invalid password", async ({ page }) => {
@@ -65,7 +70,12 @@ test.describe("should trigger toaster on invalid inputs", () => {
       .fill("wrongPassword");
 
     await page.getByRole("button", { name: "LOGIN" }).click();
-    expect(page.getByText("Invalid email or password")).toBeVisible();
+
+    const toaster = await page.waitForSelector(
+      "text=Invalid email or password",
+      { state: "visible", timeout: 5000 }
+    );
+    expect(await toaster.isVisible()).toBeTruthy();
   });
 });
 

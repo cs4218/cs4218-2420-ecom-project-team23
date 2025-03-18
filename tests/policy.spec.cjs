@@ -14,6 +14,6 @@ test("should navigate to policy page on click", async ({ page }) => {
   });
   const policyPageImg = page.getByRole("img", { name: "policy" });
 
-  expect(policyPageHeader).toBeVisible();
-  expect(policyPageImg).toBeVisible();
+  await expect(policyPageHeader).toBeVisible();
+  await expect(policyPageImg).toBeVisible();
 });

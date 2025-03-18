@@ -11,6 +11,6 @@ test("should navigate to contact on click", async ({ page }) => {
 
   const contactPageHeader = page.getByRole("heading", { name: "CONTACT US" });
   const contactPageImg = page.getByRole("img", { name: "contact" });
-  expect(contactPageHeader).toBeVisible();
-  expect(contactPageImg).toBeVisible();
+  await expect(contactPageHeader).toBeVisible();
+  await expect(contactPageImg).toBeVisible();
 });
