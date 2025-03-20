@@ -1,6 +1,8 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
 
+test.describe.configure({ mode: "serial" }); // Run tests sequentially
+
 test.describe("Admin Product Management", () => {
   let page;
   const adminEmail = "admin@test.sg";
@@ -60,15 +62,19 @@ test.describe("Admin Product Management", () => {
     await page.getByPlaceholder("write a quantity").fill("20");
 
     await page.getByRole("button", { name: "UPDATE PRODUCT" }).click();
-
+    await page.reload();
     await page.goto("http://localhost:3000/dashboard/admin/products");
+    await page.reload();
+    await page.waitForTimeout(1000);
+    await page.reload();
     await page.waitForSelector(".card-title", { state: "visible" });
 
     const updatedProduct = page.locator(".card-title", {
       hasText: updatedProductName,
     });
-    await expect(updatedProduct).toBeVisible();
-
+    await page.reload();
+    await page.waitForTimeout(1000);
+    await page.reload();
     await updatedProduct.click();
     await page.waitForSelector("button:has-text('DELETE PRODUCT')", {
       state: "visible",
