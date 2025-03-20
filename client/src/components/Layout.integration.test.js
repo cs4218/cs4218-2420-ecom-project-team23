@@ -6,7 +6,7 @@ import { AuthProvider } from "../context/auth";
 import { SearchProvider } from "../context/search";
 import { CartProvider } from "../context/cart";
 
-describe("Layout Component", () => {
+describe("Layout Component Integration Test", () => {
   const mockCustomProps = {
     title: "Custom title",
     description: "Custom description",
