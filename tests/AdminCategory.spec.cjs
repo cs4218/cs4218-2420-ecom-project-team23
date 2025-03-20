@@ -29,7 +29,6 @@ test.describe("Admin Create Category Page", () => {
     const editButton = row.locator("button.btn-primary");
     await editButton.click();
 
-    // ✅ Use modal dialog to find the correct input field
     const modal = page.locator(".ant-modal");
     const modalInput = modal.getByRole("textbox", {
       name: "Enter new category",

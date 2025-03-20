@@ -1,9 +1,11 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
 
-test.describe("Admin Create Product Page", () => {
+test.describe("Admin Product Management", () => {
   let page;
   const adminEmail = "admin@test.sg";
+  let productName;
+  let updatedProductName;
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
@@ -11,53 +13,81 @@ test.describe("Admin Create Product Page", () => {
 
     await page.goto("http://localhost:3000/login");
     await loginAsAdmin(page, adminEmail);
-    await page.waitForTimeout(5000);
-    await page.goto("http://localhost:3000/dashboard/admin/create-product");
   });
 
-  test("should create a new product successfully", async () => {
-    const productName = `TestProduct-${Date.now()}`;
+  test("should create, edit, and delete a product successfully", async () => {
+    productName = `TestProduct-${Date.now()}`;
+    updatedProductName = `Updated-${productName}`;
     const productDescription = "This is a test description.";
     const productPrice = "99.99";
     const productQuantity = "10";
 
-    // ✅ Select category dropdown
+    await page.goto("http://localhost:3000/dashboard/admin/create-product");
+    await page.waitForSelector(".form-select", { state: "visible" });
+
     const categoryDropdown = page.locator(".ant-select-selector").nth(0);
     await categoryDropdown.click();
+    await page.waitForSelector(".ant-select-dropdown", { state: "visible" });
 
-    // ✅ Wait for dropdown options to appear and select the first option
-    const dropdown = page.locator(".ant-select-dropdown");
-    await dropdown.waitFor({ state: "visible" });
-
-    const firstOption = dropdown.locator(".ant-select-item-option").first();
+    const firstOption = page.locator(".ant-select-item-option").first();
     await firstOption.waitFor({ state: "visible" });
     await firstOption.click();
 
-    // ✅ Fill in product details
     await page.getByPlaceholder("write a name").fill(productName);
     await page.getByPlaceholder("write a description").fill(productDescription);
     await page.getByPlaceholder("write a Price").fill(productPrice);
     await page.getByPlaceholder("write a quantity").fill(productQuantity);
 
-    // ✅ Select shipping option
     const shippingDropdown = page.locator(".ant-select-selector").nth(1);
     await shippingDropdown.click();
     await page.locator(".ant-select-item-option", { hasText: "Yes" }).click();
 
-    // ✅ Submit form
     await page.getByRole("button", { name: "CREATE PRODUCT" }).click();
 
-    // ✅ Expect success toast
-    await expect(page.getByText("Product Created Successfully")).toBeVisible();
-
-    // ✅ Navigate to products list
     await page.goto("http://localhost:3000/dashboard/admin/products");
+    await page.waitForSelector(".card-title", { state: "visible" });
+    const lastProduct = page.locator(".card-title", { hasText: productName });
+    await expect(lastProduct).toBeVisible();
 
-    // ✅ Verify product exists (Scoped to last added product)
-    const lastProductCard = page.locator(".card").first();
-    await expect(lastProductCard.locator(".card-title")).toHaveText(
-      productName
-    );
+    await lastProduct.click();
+    await page.waitForSelector("input[placeholder='write a name']");
+
+    await page.getByPlaceholder("write a name").fill(updatedProductName);
+    await page
+      .getByPlaceholder("write a description")
+      .fill("Updated description.");
+    await page.getByPlaceholder("write a Price").fill("79.99");
+    await page.getByPlaceholder("write a quantity").fill("20");
+
+    await page.getByRole("button", { name: "UPDATE PRODUCT" }).click();
+
+    await page.goto("http://localhost:3000/dashboard/admin/products");
+    await page.waitForSelector(".card-title", { state: "visible" });
+
+    const updatedProduct = page.locator(".card-title", {
+      hasText: updatedProductName,
+    });
+    await expect(updatedProduct).toBeVisible();
+
+    await updatedProduct.click();
+    await page.waitForSelector("button:has-text('DELETE PRODUCT')", {
+      state: "visible",
+    });
+
+    await page.evaluate(() => {
+      window.prompt = () => "yes";
+    });
+
+    await page.getByRole("button", { name: "DELETE PRODUCT" }).click();
+
+    await page.waitForTimeout(3000);
+
+    await page.goto("http://localhost:3000/dashboard/admin/products");
+    await page.waitForSelector(".card-title", { state: "visible" });
+
+    await expect(
+      page.locator(".card-title", { hasText: updatedProductName })
+    ).toHaveCount(0);
   });
 });
 
