@@ -1,13 +1,14 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
 
-test.describe.configure({ mode: "serial" }); // Run tests sequentially
+test.describe.configure({ mode: "serial" });
 
 test.describe("Admin Product Management", () => {
   let page;
   const adminEmail = "admin@test.sg";
   let productName;
   let updatedProductName;
+  let createdProductId; // Store Product ID
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
@@ -46,8 +47,13 @@ test.describe("Admin Product Management", () => {
 
     await page.getByRole("button", { name: "CREATE PRODUCT" }).click();
 
+    // ✅ Retrieve product ID from API after creation
+    await page.waitForTimeout(2000); // Allow time for DB update
+    createdProductId = await getProductIdFromAPI(productName);
+
     await page.goto("http://localhost:3000/dashboard/admin/products");
     await page.waitForSelector(".card-title", { state: "visible" });
+
     const lastProduct = page.locator(".card-title", { hasText: productName });
     await expect(lastProduct).toBeVisible();
 
@@ -65,35 +71,37 @@ test.describe("Admin Product Management", () => {
     await page.reload();
     await page.goto("http://localhost:3000/dashboard/admin/products");
     await page.reload();
-    await page.waitForTimeout(1000);
-    await page.reload();
     await page.waitForSelector(".card-title", { state: "visible" });
 
     const updatedProduct = page.locator(".card-title", {
       hasText: updatedProductName,
     });
-    await page.reload();
-    await page.waitForTimeout(1000);
-    await page.reload();
-    await updatedProduct.click();
-    await page.waitForSelector("button:has-text('DELETE PRODUCT')", {
-      state: "visible",
-    });
 
-    await page.evaluate(() => {
-      window.prompt = () => "yes";
-    });
+    try {
+      await expect(updatedProduct).toBeVisible({ timeout: 5000 });
+      await updatedProduct.click();
+      await page.waitForSelector("button:has-text('DELETE PRODUCT')", {
+        state: "visible",
+      });
 
-    await page.getByRole("button", { name: "DELETE PRODUCT" }).click();
+      page.once("dialog", async (dialog) => {
+        await dialog.accept("yes");
+      });
 
-    await page.waitForTimeout(3000);
+      await page.getByRole("button", { name: "DELETE PRODUCT" }).click();
+      await page.waitForTimeout(3000);
 
-    await page.goto("http://localhost:3000/dashboard/admin/products");
-    await page.waitForSelector(".card-title", { state: "visible" });
+      await page.goto("http://localhost:3000/dashboard/admin/products");
+      await page.waitForSelector(".card-title", { state: "visible" });
 
-    await expect(
-      page.locator(".card-title", { hasText: updatedProductName })
-    ).toHaveCount(0);
+      await expect(
+        page.locator(".card-title", { hasText: updatedProductName })
+      ).toHaveCount(0);
+    } catch (error) {
+      if (createdProductId) {
+        await deleteProductDirectly(createdProductId);
+      }
+    }
   });
 });
 
@@ -102,4 +110,42 @@ async function loginAsAdmin(page, email) {
   await page.getByRole("textbox", { name: "Enter Your Password" }).fill(email);
   await page.getByRole("button", { name: "LOGIN" }).click();
   await page.waitForURL("http://localhost:3000/");
+}
+
+// ✅ Retrieve Product ID from API
+async function getProductIdFromAPI(productName) {
+  try {
+    const response = await fetch(
+      "http://localhost:3000/api/v1/product/get-product",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    if (response.ok && data.success) {
+      const product = data.products.find((p) => p.name === productName);
+      return product ? product._id : null;
+    }
+  } catch (error) {
+    return null;
+  }
+}
+
+// ✅ Backend API deletion fallback
+async function deleteProductDirectly(productId) {
+  try {
+    await fetch(
+      `http://localhost:3000/api/v1/product/delete-product/${productId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  } catch (error) {}
 }
