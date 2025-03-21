@@ -16,7 +16,7 @@ test.describe("About Component UI Tests", () => {
     await expect(image).toHaveAttribute("src", "/images/about.jpeg")
 
 
-    const paragraph = page.locator("row.contactus"); // should get the about page div
+    const paragraph = page.locator(".row.contactus"); // should get the about page div
 
     await expect(paragraph).toBeVisible();
     await expect(paragraph).not.toBeEmpty();
