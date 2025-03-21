@@ -6,10 +6,10 @@ const loginUser = async (page) => {
   await page.getByRole("link", { name: "Login" }).click();
   await page
     .getByRole("textbox", { name: /Enter Your Email/i })
-    .fill("test1@test.com");
+    .fill("cs4218@test.com");
   await page
     .getByRole("textbox", { name: /Enter Your Password/i })
-    .fill("test1");
+    .fill("cs4218@test.com");
   await page.getByRole("button", { name: "LOGIN" }).click();
 
   await expect(page.getByText(/login successfully/i)).toBeVisible();
@@ -35,10 +35,26 @@ test.describe("UserMenu Component UI Tests", () => {
   test("should have the correct links", async ({ page }) => {
     const profileLink = page.getByRole("link", { name: "Profile" });
     await expect(profileLink).toBeVisible();
-    await expect(profileLink).toHaveAttribute("href", "/dashboard/user/profile");
+    await expect(profileLink).toHaveAttribute(
+      "href",
+      "/dashboard/user/profile"
+    );
 
     const ordersLink = page.getByRole("link", { name: "Orders" });
     await expect(ordersLink).toBeVisible();
     await expect(ordersLink).toHaveAttribute("href", "/dashboard/user/orders");
+  });
+
+  test("links goes to the correct page", async ({ page }) => {
+    const profileLink = page.getByRole("link", { name: "Profile" });
+    await profileLink.click();
+    await expect(page).toHaveURL(
+      `http://localhost:3000/dashboard/user/profile`
+    );
+    await page.goBack();
+
+    const ordersLink = page.getByRole("link", { name: "Orders" });
+    await ordersLink.click();
+    await expect(page).toHaveURL(`http://localhost:3000/dashboard/user/orders`);
   });
 });
