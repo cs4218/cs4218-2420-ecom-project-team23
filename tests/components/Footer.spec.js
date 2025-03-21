@@ -7,12 +7,9 @@ test.describe("Footer Component UI Tests", () => {
     { name: /contact/i, href: "/contact" },
     { name: /privacy policy/i, href: "/policy" },
   ];
-
-  test.beforeEach(async ({ page }) => {
-    await page.goto("http://localhost:3000");
-  });
-
+  
   test("should display copyright text", async ({ page }) => {
+    await page.goto("http://localhost:3000");
     const footer = page.locator(".footer");
     await expect(footer.locator("h4").first()).toHaveText(
       "All Rights Reserved \u00A9 TestingComp"
@@ -20,6 +17,7 @@ test.describe("Footer Component UI Tests", () => {
   });
 
   test("should have correct navigation links", async ({ page }) => {
+    await page.goto("http://localhost:3000");
     const footer = page.locator(".footer");
     const linksP = footer.locator("p.text-center.mt-3");
 

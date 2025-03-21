@@ -1,12 +1,12 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
 
+// WIP
 test.describe("Header Component UI Tests", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("http://localhost:3000");
-  });
 
   test("should display brand logo and nav links", async ({ page }) => {
+    await page.goto("http://localhost:3000");
+
     const brandLink = page.locator(".navbar-brand");
     await expect(brandLink).toHaveText("🛒 Virtual Vault");
     await expect(brandLink).toHaveAttribute("href", "/");
