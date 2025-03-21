@@ -57,6 +57,6 @@ test.describe("User Dashboard Component UI Tests", () => {
 
     await page.waitForTimeout(3000)
 
-    await expect(page).toHaveURL("http://localhost:3000/");
+    await expect(page).toHaveURL("http://localhost:3000/login");
   });
 });
