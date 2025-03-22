@@ -23,7 +23,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "PORT=3000 react-scripts start",
+    "start": "cross-env PORT=3000 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "ajv": "^7.2.4",
+    "cross-env": "^7.0.3",
     "jest": "^27.5.1"
   }
 }
