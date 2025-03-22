@@ -6,6 +6,10 @@ describe("Auth Helper Test", () => {
   const password = "password";
 
   beforeEach(() => {
+    jest.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
     jest.restoreAllMocks();
   });
 

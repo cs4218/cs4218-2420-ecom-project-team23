@@ -17,10 +17,12 @@ import orderModel from "../models/orderModel";
 jest.mock("../models/userModel");
 jest.mock("../helpers/authHelper");
 jest.mock("jsonwebtoken");
-
 jest.mock("../models/orderModel.js");
 
 jest.mock("../helpers/authHelper.js");
+
+// Supress console.log during testing
+jest.spyOn(console, "log").mockImplementation(() => {});
 
 describe("Register Controller Test", () => {
   let req, res;
@@ -147,6 +149,18 @@ describe("Register Controller Test", () => {
       expect(userModel.prototype.save).not.toHaveBeenCalled();
     });
 
+    it("should not save new user if password shorted that 6 characters", async () => {
+      req.body.password = "12345";
+
+      await registerController(req, res);
+
+      expect(res.send).toHaveBeenCalledWith({
+        message: "Password must be at least 6 characters",
+      });
+
+      expect(userModel.prototype.save).not.toHaveBeenCalled();
+    });
+
     it("should not save new user if empty phone no", async () => {
       req.body.phone = "";
 
@@ -228,7 +242,7 @@ describe("Login Controller Test", () => {
     it("should login user and return 200 and a token", async () => {
       userModel.findOne = jest.fn().mockResolvedValue(expectedUser);
       comparePassword.mockResolvedValue(true);
-      JWT.sign.mockResolvedValue(expectedToken);
+      JWT.sign.mockReturnValue(expectedToken);
 
       await loginController(req, res);
 
@@ -481,6 +495,18 @@ describe("Forget Password Controller Test", () => {
         message: "New Password is required",
       });
     });
+
+    it("should not update password and return 200 if invalid newPassword", async () => {
+      req.body.newPassword = "12345";
+
+      await forgotPasswordController(req, res);
+
+      expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith({
+        message: "New Password must be at least 6 characters",
+      });
+    });
   });
 });
 
@@ -515,7 +541,7 @@ describe("Update Profile Controller Test", () => {
   const updatedUserData = {
     name: "Jane Doe",
     password: "hashedNewPassword",
-    phone: "9765432",
+    phone: "97654322",
     address: "Example Street 2",
   };
 
@@ -595,6 +621,25 @@ describe("Update Profile Controller Test", () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       error: "Password should be at least 6 character long",
+    });
+  });
+
+  it("should return an error if phone number does not pass phone regix", async () => {
+    req.body.phone = "91245";
+
+    userModel.findOne = jest.fn().mockResolvedValue(defaultUser);
+    comparePassword.mockResolvedValue(true);
+
+    await updateProfileController(req, res);
+
+    expect(userModel.findOne).toHaveBeenCalledWith({
+      email: req.body.email,
+    });
+    expect(comparePassword).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      error:
+        "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits]",
     });
   });
 
