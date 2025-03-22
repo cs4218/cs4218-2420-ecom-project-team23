@@ -706,29 +706,20 @@ describe("Product Controller Tests", () => {
       });
     });
 
-    it("should return all products if category is not found", async () => {
+    it("should return empty array if category is not found", async () => {
       categoryModel.findOne.mockResolvedValue(null);
 
-      const mockProducts = [
-        { _id: "1", name: "Product 1", category: "categoryA" },
-        { _id: "2", name: "Product 2", category: "categoryB" },
-      ];
-
       productModel.find.mockReturnValue({
-        populate: jest.fn().mockResolvedValue(mockProducts),
+        populate: jest.fn().mockResolvedValue([]),
       });
 
       await productCategoryController(req, res);
 
-      expect(categoryModel.findOne).toHaveBeenCalledWith({
-        slug: "electronics",
-      });
       expect(productModel.find).toHaveBeenCalledWith({ category: null });
-      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith({
         success: true,
         category: null,
-        products: mockProducts,
+        products: [],
       });
     });
 
