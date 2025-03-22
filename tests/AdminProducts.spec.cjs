@@ -1,5 +1,6 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
+const fetch = require("node-fetch");
 
 test.describe.configure({ mode: "serial" });
 
@@ -47,7 +48,7 @@ test.describe("Admin Product Management", () => {
 
     await page.getByRole("button", { name: "CREATE PRODUCT" }).click();
 
-    // ✅ Retrieve product ID from API after creation
+    // Retrieve product ID from API after creation
     await page.waitForTimeout(2000); // Allow time for DB update
     createdProductId = await getProductIdFromAPI(productName);
 
@@ -112,7 +113,7 @@ async function loginAsAdmin(page, email) {
   await page.waitForURL("http://localhost:3000/");
 }
 
-// ✅ Retrieve Product ID from API
+// Retrieve Product ID from API
 async function getProductIdFromAPI(productName) {
   try {
     const response = await fetch(
@@ -135,7 +136,7 @@ async function getProductIdFromAPI(productName) {
   }
 }
 
-// ✅ Backend API deletion fallback
+// Backend API deletion fallback
 async function deleteProductDirectly(productId) {
   try {
     await fetch(
