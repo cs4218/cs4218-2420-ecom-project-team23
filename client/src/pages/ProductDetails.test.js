@@ -13,6 +13,10 @@ jest.mock("../components/Layout", () => ({ children }) => (
   <div>{children}</div>
 ));
 
+jest.mock("../context/cart", () => ({
+  useCart: jest.fn(() => [[], jest.fn()]),
+}));
+
 describe("ProductDetails Page", () => {
   beforeEach(() => {
     jest.clearAllMocks();

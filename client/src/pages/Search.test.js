@@ -9,6 +9,10 @@ jest.mock("../context/search", () => ({
   useSearch: jest.fn(),
 }));
 
+jest.mock("../context/cart", () => ({
+  useCart: jest.fn(() => [[], jest.fn()]),
+}));
+
 jest.mock("../components/Layout", () => ({ title, children }) => (
   <div>
     <h1>{title}</h1>
