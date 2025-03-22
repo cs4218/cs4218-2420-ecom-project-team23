@@ -174,6 +174,6 @@ test.describe("Header Component UI Tests", () => {
     const logoutLink = userNameDropdown.locator(".dropdown-item").nth(1);
     await logoutLink.click();
 
-    await expect(page).toHaveURL("locahost:3000/login");
+    await expect(page).toHaveURL("http://localhost:3000/login");
   });
 });
