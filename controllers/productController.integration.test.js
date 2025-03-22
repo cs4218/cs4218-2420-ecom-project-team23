@@ -22,7 +22,7 @@ jest.mock("express-formidable", () => {
 
 jest.mock("../middlewares/authMiddleware", () => ({
   requireSignIn: (req, res, next) => {
-    req.user = { id: "testUserId", role: "admin" };
+    req.user = { _id: "67d0745ec9e0ef3de7eae0e8", id: "testUserId", role: "admin" };
     next();
   },
   isAdmin: (req, res, next) => {
