@@ -1,19 +1,13 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
 
-const loginUser = async (page) => {
-  await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
-  await page.getByRole("link", { name: "Login" }).click();
-  await page
-    .getByRole("textbox", { name: /Enter Your Email/i })
-    .fill("cs4218@test.com");
-  await page
-    .getByRole("textbox", { name: /Enter Your Password/i })
-    .fill("cs4218@test.com");
+async function loginUser(page) {
+  await page.goto("http://localhost:3000/login");
+  await page.getByPlaceholder("Enter Your Email").fill("cs4218@test.com");
+  await page.getByPlaceholder("Enter Your Password").fill("cs4218@test.com");
   await page.getByRole("button", { name: "LOGIN" }).click();
-
-  await expect(page.getByText(/login successfully/i)).toBeVisible();
-};
+  await page.waitForURL("http://localhost:3000/");
+}
 
 test.describe("User Dashboard Component UI Tests", () => {
   const userInformation = {
