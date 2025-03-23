@@ -1,6 +1,6 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
-import { Prices } from "../../client/src/components/Prices";
+import { Prices } from "../client/src/components/Prices";
 
 const mockProductPage1 = {
   products: [

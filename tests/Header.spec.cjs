@@ -158,7 +158,7 @@ test.describe("Header Component UI Tests", () => {
         ])
       );
     });
-    page.reload();
+    await page.reload();
 
     const badgeCount = page.locator(".ant-badge-count");
     await expect(badgeCount).toBeVisible();
