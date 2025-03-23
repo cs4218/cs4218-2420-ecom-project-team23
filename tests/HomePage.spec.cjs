@@ -63,7 +63,7 @@ const filteredProducts = {
     {
       _id: "5",
       name: "Product 5",
-      slug: "product-6",
+      slug: "product-5",
       description:
         "Product 5 doesn't exist in the main arrays, but this is a test that these two shows up in the website",
       price: 1,

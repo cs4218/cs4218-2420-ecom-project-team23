@@ -9,7 +9,7 @@ test.describe("Footer Component UI Tests", () => {
   ];
   
   test("should display copyright text", async ({ page }) => {
-    await page.goto("http://localhost:3000");
+    await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
     const footer = page.locator(".footer");
     await expect(footer.locator("h4").first()).toHaveText(
       "All Rights Reserved \u00A9 TestingComp"
@@ -17,7 +17,7 @@ test.describe("Footer Component UI Tests", () => {
   });
 
   test("should have correct navigation links", async ({ page }) => {
-    await page.goto("http://localhost:3000");
+    await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
     const footer = page.locator(".footer");
     const linksP = footer.locator("p.text-center.mt-3");
 
@@ -32,7 +32,7 @@ test.describe("Footer Component UI Tests", () => {
       const linkElement = linksP.getByRole("link", { name: link.name });
       await linkElement.click();
       await expect(page).toHaveURL(`http://localhost:3000${link.href}`)
-      await page.goBack();
+      await page.goBack({waitUntil: "domcontentloaded"});
     }
   });
 });
