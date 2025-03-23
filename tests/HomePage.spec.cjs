@@ -63,7 +63,7 @@ const filteredProducts = {
     {
       _id: "5",
       name: "Product 5",
-      slug: "product-6",
+      slug: "product-5",
       description:
         "Product 5 doesn't exist in the main arrays, but this is a test that these two shows up in the website",
       price: 1,
@@ -79,7 +79,7 @@ const filteredProducts = {
   ],
 };
 
-test.describe("About Component UI Tests", () => {
+test.describe("About Component UI Tests with mocked API response", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/api/v1/category/get-category", async (route) => {
       await route.fulfill({
@@ -208,7 +208,7 @@ test.describe("About Component UI Tests", () => {
 
   test("should allow filtering by price", async ({ page }) => {
     const filters = page.locator(".filters");
-    const filteredCat = filters.getByRole("radio", { name:"$0 to 19" });
+    const filteredCat = filters.getByRole("radio", { name: "$0 to 19" });
 
     await filteredCat.check();
 
@@ -272,6 +272,89 @@ test.describe("About Component UI Tests", () => {
     await expect(products).toHaveCount(2);
 
     await productLocatorTest(page, mockProductPage1.products);
+  });
+});
+
+test.describe("About Component UI Tests with actual API", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
+  });
+
+  test("should have categories checkboxes", async ({ page }) => {
+    await page.waitForSelector(".filters .ant-checkbox-label");
+
+    const filters = page.locator(".filters");
+    const checkboxes = filters.locator(".ant-checkbox-label");
+    const allCheckboxes = await checkboxes.all();
+
+    expect(await checkboxes.count()).toBeGreaterThan(0);
+
+    for (const checkbox of allCheckboxes) {
+      await expect(checkbox).toBeVisible();
+    }
+  });
+
+  test("should have products and each of their details", async ({ page }) => {
+    await page.waitForSelector(".home-page .card");
+
+    const products = page.locator(".home-page .card");
+
+    expect(await products.count()).toBeGreaterThan(0);
+
+    await expect(products.nth(0).locator(".card-title").first()).toBeVisible();
+  });
+
+  test("should be able to show more products", async ({ page }) => {
+    await page.waitForSelector(".home-page .card");
+
+    const initialProducts = await page.locator(".home-page .card").count();
+    const showMoreButton = page.locator("button.loadmore");
+
+    await expect(showMoreButton).toBeVisible();
+    await showMoreButton.click();
+
+    await page.waitForResponse("**/api/v1/product/product-list/2");
+
+    const products = await page.locator(".home-page .card").count();
+    expect(products).toBeGreaterThan(initialProducts);
+  });
+
+  test("should allow filtering by category", async ({ page }) => {
+    await page.waitForSelector(".filters .ant-checkbox-label");
+
+    const filters = page.getByRole("checkbox");
+
+    expect(await filters.count()).toBeGreaterThan(0);
+
+    await filters.first().check();
+
+    await page.waitForResponse("**/api/v1/product/product-filters");
+
+    const products = page.locator(".home-page .card");
+    for (let i = 0; i < await products.count(); i++) {
+      await expect(products.nth(i)).toBeVisible();
+    }
+  });
+
+  test("should allow filtering by price", async ({ page }) => {
+    const filters = page.locator(".filters");
+    const filteredCat = filters.getByRole("radio", { name: "$0 to 19" });
+
+    await filteredCat.check();
+
+    await page.waitForResponse("**/api/v1/product/product-filters");
+
+    const products = page.locator(".home-page .card");
+
+    for (let i = 0; i < await products.count(); i++) {
+      await expect(products.nth(i)).toBeVisible();
+
+      const productPrice = await products.nth(i).locator(".card-title.card-price").innerText();
+      const price = parseFloat(productPrice.replace("$", ""));
+
+      expect(price).toBeLessThanOrEqual(19);
+      expect(price).toBeGreaterThanOrEqual(0);
+    }
   });
 });
 

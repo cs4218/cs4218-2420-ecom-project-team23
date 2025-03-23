@@ -2,7 +2,7 @@
 const { test, expect } = require("@playwright/test");
 
 const loginUser = async (page) => {
-  await page.goto("http://localhost:3000");
+  await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
   await page.getByRole("link", { name: "Login" }).click();
   await page
     .getByRole("textbox", { name: /Enter Your Email/i })
@@ -16,7 +16,7 @@ const loginUser = async (page) => {
 };
 
 const loginAdmin = async (page) => {
-  await page.goto("http://localhost:3000");
+  await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
   await page.getByRole("link", { name: "Login" }).click();
   await page
     .getByRole("textbox", { name: /Enter Your Email/i })
@@ -44,7 +44,7 @@ test.describe("Header Component UI Tests", () => {
         body: JSON.stringify({ category: customCategories }),
       });
     });
-    await page.goto("http://localhost:3000");
+    await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
   });
 
   test("should display brand logo and nav links", async ({ page }) => {
@@ -158,7 +158,7 @@ test.describe("Header Component UI Tests", () => {
         ])
       );
     });
-    await page.reload();
+    await page.reload({waitUntil: "domcontentloaded"});
 
     const badgeCount = page.locator(".ant-badge-count");
     await expect(badgeCount).toBeVisible();

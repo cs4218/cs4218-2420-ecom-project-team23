@@ -2,7 +2,7 @@
 const { test, expect } = require("@playwright/test");
 
 const loginUser = async (page) => {
-  await page.goto("http://localhost:3000");
+  await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
   await page.getByRole("link", { name: "Login" }).click();
   await page
     .getByRole("textbox", { name: /Enter Your Email/i })
@@ -24,7 +24,7 @@ test.describe("User Dashboard Component UI Tests", () => {
 
   test.beforeEach(async ({ page }) => {
     await loginUser(page);
-    await page.goto("http://localhost:3000/dashboard/user");
+    await page.goto("http://localhost:3000/dashboard/user", {waitUntil: "domcontentloaded"});
   });
 
   test("should have correct title", async ({ page }) => {
