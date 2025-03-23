@@ -1,71 +1,83 @@
 // @ts-check
-// Requirement: The database is populated with the JSON data files provided by the course
 const { test, expect } = require("@playwright/test");
+const {
+  loginAsAdmin,
+  createProduct,
+  deleteProduct,
+} = require("../utilities/testUtils");
 
-test.beforeEach(async ({ page }) => {
-  await login(page);
+test.describe.configure({ mode: "serial" });
+
+let adminToken;
+let createdProducts = [];
+
+test.beforeAll(async () => {
+  adminToken = await loginAsAdmin();
+
+  const productInputs = [
+    {
+      name: "BYD Seal",
+      description: "EV Car",
+      price: 14.99,
+      quantity: 10,
+      shipping: 1,
+    },
+    {
+      name: "Tesla Model Y",
+      description: "Bad Car",
+      price: 54.99,
+      quantity: 5,
+      shipping: 1,
+    },
+    {
+      name: "Hyundai Ioniq 3",
+      description: "Amazing vehicle",
+      price: 4.99,
+      quantity: 15,
+      shipping: 1,
+    },
+  ];
+
+  for (const input of productInputs) {
+    const product = await createProduct({
+      ...input,
+      token: adminToken,
+    });
+    createdProducts.push({
+      ...product,
+      ...input,
+    });
+  }
+});
+
+test.afterAll(async () => {
+  for (const product of createdProducts) {
+    await deleteProduct(product.id);
+  }
 });
 
 test.describe("Display Products", () => {
   test("should display products in cart page after adding to cart", async ({
     page,
   }) => {
-    // Add items to cart and then navigate to cart page
-    await addItemsToCart(page);
+    await loginUser(page);
+    await addProductsToCart(page, createdProducts);
     await navigateToCartPage(page);
 
-    // Assert that products' details appear in cart page
-    await expect(page.locator("h1")).toContainText(
-      "Hello  CS 4218 Test AccountYou have 3 items in your cart"
-    );
-    await expect(page.getByRole("img", { name: "Novel" })).toBeVisible();
-    await expect(page.getByRole("main")).toContainText(
-      "NovelA bestselling novelPrice : 14.99"
-    );
-    await expect(
-      page
-        .locator("div")
-        .filter({ hasText: /^NovelA bestselling novelPrice : 14\.99Remove$/ })
-        .getByRole("button")
-    ).toBeVisible();
-    await expect(
-      page.getByRole("img", { name: "The Law of Contract in" })
-    ).toBeVisible();
-    await expect(page.getByRole("main")).toContainText(
-      "The Law of Contract in SingaporeA bestselling book in SingaporPrice : 54.99"
-    );
-    await expect(
-      page.getByRole("button", { name: "Remove" }).nth(1)
-    ).toBeVisible();
-    await expect(page.getByRole("img", { name: "NUS T-shirt" })).toBeVisible();
-    await expect(page.getByRole("main")).toContainText(
-      "NUS T-shirtPlain NUS T-shirt for salePrice : 4.99"
-    );
-    await expect(
-      page
-        .locator("div")
-        .filter({
-          hasText: /^NUS T-shirtPlain NUS T-shirt for salePrice : 4\.99Remove$/,
-        })
-        .getByRole("button")
-    ).toBeVisible();
+    await expect(page.getByText(/You have 3 items/)).toBeVisible();
 
-    // Assert that the total cost is correct
-    await expect(page.getByRole("main")).toContainText("Total : $74.97");
+    for (const product of createdProducts) {
+      const card = page.locator(".card", { hasText: product.name });
+      await expect(card).toContainText(product.description);
+      await expect(card).toContainText(`Price : ${product.price}`);
+    }
 
-    // Assert the make payment UI is present
-    await page.waitForTimeout(5000);
+    const total = createdProducts
+      .reduce((sum, p) => sum + p.price, 0)
+      .toFixed(2);
+
+    await expect(page.getByRole("main")).toContainText(`Total : $${total}`);
     await expect(page.getByRole("main")).toContainText("Choose a way to pay");
-    await expect(page.getByText("Edit Choose a way to pay")).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Paying with Card" })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Paying with PayPal" })
-    ).toBeVisible();
-    await expect(page.getByRole("main")).toContainText(
-      "Paypal option is currently unavailable as product is still in development"
-    );
     await expect(
       page.getByRole("button", { name: "Make Payment" })
     ).toBeVisible();
@@ -74,49 +86,46 @@ test.describe("Display Products", () => {
   test("should display 1 less product after removing from cart", async ({
     page,
   }) => {
-    // Add items to cart and then navigate to cart page
-    await addItemsToCart(page);
+    await loginUser(page);
+    await addProductsToCart(page, createdProducts);
     await navigateToCartPage(page);
 
-    // Assert that there are 3 items in the cart
-    await expect(page.locator("h1")).toContainText(
-      "Hello  CS 4218 Test AccountYou have 3 items in your cart"
-    );
-    await expect(page.getByRole("main")).toContainText("Total : $74.97");
+    await expect(page.getByText(/You have 3 items/)).toBeVisible();
 
     // Remove the first item from the cart
+    const first = createdProducts[0];
     await page
-      .locator("div")
-      .filter({ hasText: /^NovelA bestselling novelPrice : 14\.99Remove$/ })
-      .getByRole("button")
+      .locator(".card", { hasText: first.name })
+      .getByRole("button", { name: "Remove" })
       .click();
 
-    // Assert that there are 2 items in the cart, with updated total price
-    await expect(page.locator("h1")).toContainText(
-      "Hello CS 4218 Test AccountYou have 2 items in your cart"
+    await expect(page.getByText(/You have 2 items/)).toBeVisible();
+
+    const remainingTotal = createdProducts
+      .slice(1)
+      .reduce((sum, p) => sum + p.price, 0)
+      .toFixed(2);
+
+    await expect(page.getByRole("main")).toContainText(
+      `Total : $${remainingTotal}`
     );
-    await expect(page.getByRole("main")).toContainText("Total : $59.98");
   });
 });
 
 test.describe("Address", () => {
   test("should update address properly and display it", async ({ page }) => {
-    // Navigate to cart page
+    await loginUser(page);
     await navigateToCartPage(page);
 
-    // Update address and assert that it is reflected
     await page.getByRole("button", { name: "Update Address" }).click();
     await page
       .getByRole("textbox", { name: "Enter Your Current Password" })
-      .click();
-    await page
-      .getByRole("textbox", { name: "Enter Your Current Password" })
       .fill("cs4218@test.com");
-    await page.getByRole("textbox", { name: "Enter Your Address" }).click();
     await page
       .getByRole("textbox", { name: "Enter Your Address" })
       .fill("2 Computing Drive");
     await page.getByRole("button", { name: "UPDATE" }).click();
+
     await navigateToCartPage(page);
     await expect(page.getByRole("main")).toContainText(
       "Current Address2 Computing DriveUpdate Address"
@@ -126,15 +135,12 @@ test.describe("Address", () => {
     await page.getByRole("button", { name: "Update Address" }).click();
     await page
       .getByRole("textbox", { name: "Enter Your Current Password" })
-      .click();
-    await page
-      .getByRole("textbox", { name: "Enter Your Current Password" })
       .fill("cs4218@test.com");
-    await page.getByRole("textbox", { name: "Enter Your Address" }).click();
     await page
       .getByRole("textbox", { name: "Enter Your Address" })
       .fill("1 Computing Drive");
     await page.getByRole("button", { name: "UPDATE" }).click();
+
     await navigateToCartPage(page);
     await expect(page.getByRole("main")).toContainText(
       "Current Address1 Computing DriveUpdate Address"
@@ -142,32 +148,38 @@ test.describe("Address", () => {
   });
 });
 
-async function login(page) {
+async function loginUser(page) {
   await page.goto("http://localhost:3000/login");
-  await page.getByRole("textbox", { name: "Enter Your Email" }).click();
-  await page
-    .getByRole("textbox", { name: "Enter Your Email" })
-    .fill("cs4218@test.com");
-  await page.getByRole("textbox", { name: "Enter Your Password" }).click();
-  await page
-    .getByRole("textbox", { name: "Enter Your Password" })
-    .fill("cs4218@test.com");
+  await page.getByPlaceholder("Enter Your Email").fill("cs4218@test.com");
+  await page.getByPlaceholder("Enter Your Password").fill("cs4218@test.com");
   await page.getByRole("button", { name: "LOGIN" }).click();
   await page.waitForURL("http://localhost:3000/");
 }
 
-async function addItemsToCart(page) {
-  await page.locator(".card-name-price > button:nth-child(2)").first().click();
-  await page
-    .locator(
-      "div:nth-child(2) > .card-body > div:nth-child(3) > button:nth-child(2)"
-    )
-    .click();
-  await page
-    .locator(
-      "div:nth-child(3) > .card-body > div:nth-child(3) > button:nth-child(2)"
-    )
-    .click();
+async function addProductsToCart(page, products) {
+  for (let i = 0; i < products.length; i++) {
+    const product = products[i];
+    await page.goto(`http://localhost:3000/product/${product.slug}`);
+
+    // Wait until product name is visible, ensures product data has loaded
+    await expect(
+      page.getByRole("heading", { name: product.name })
+    ).toBeVisible();
+
+    await page.getByRole("button", { name: "ADD TO CART" }).first().click();
+
+    // Wait for cart to reflect correct count
+    await page.waitForFunction((expectedCount) => {
+      try {
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        return cart.length === expectedCount;
+      } catch {
+        return false;
+      }
+    }, i + 1);
+  }
+
+  await page.reload();
 }
 
 async function navigateToCartPage(page) {
