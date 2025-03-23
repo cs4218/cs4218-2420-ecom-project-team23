@@ -16,7 +16,10 @@ describe("Require SignIn Middleware Test", () => {
         authorization: "ValidToken",
       },
     };
-    res = {};
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
     next = jest.fn();
   });
 
@@ -36,8 +39,7 @@ describe("Require SignIn Middleware Test", () => {
 
   it("should handle JWT verification error and call next with an error", async () => {
     req.headers.authorization = "invalidToken";
-
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
     const expectedError = new Error("Invalid Token");
 
     JWT.verify.mockImplementationOnce((auth, jwt_secret) => {
@@ -51,6 +53,12 @@ describe("Require SignIn Middleware Test", () => {
       process.env.JWT_SECRET
     );
     expect(consoleSpy).toHaveBeenCalledWith(expectedError);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      error: expectedError,
+      message: expectedError.message,
+    });
     expect(next).not.toHaveBeenCalled();
   });
 });
@@ -102,7 +110,7 @@ describe("Is Admin Middleware Test", () => {
   });
 
   it("should log error and return 500 if internal server error", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
     const expectedError = new Error("Admin Middleware Error");
 
     userModel.findById.mockRejectedValue(expectedError);

@@ -198,7 +198,7 @@ describe("UpdateProduct Component", () => {
     fireEvent.click(screen.getByText("DELETE PRODUCT"));
 
     expect(promptMock).toHaveBeenCalledWith(
-      "Are You Sure want to delete this product ? "
+      "Are you sure want to delete this product? "
     );
 
     await waitFor(() => {

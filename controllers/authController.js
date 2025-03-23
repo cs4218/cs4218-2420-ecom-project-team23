@@ -23,6 +23,8 @@ export const registerController = async (req, res) => {
 
     if (!password) {
       return res.send({ message: "Password is Required" });
+    } else if (password.length < 6) {
+      return res.send({ message: "Password must be at least 6 characters" });
     }
 
     if (!phone) {
@@ -44,6 +46,7 @@ export const registerController = async (req, res) => {
 
     //check user
     const exisitingUser = await userModel.findOne({ email });
+
     //exisiting user
     if (exisitingUser) {
       return res.status(200).send({
@@ -98,6 +101,7 @@ export const loginController = async (req, res) => {
         message: "Invalid email or password",
       });
     }
+
     const match = await comparePassword(password, user.password);
     if (!match) {
       return res.status(200).send({
@@ -106,9 +110,10 @@ export const loginController = async (req, res) => {
       });
     }
     //token
-    const token = await JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
+    const token = JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
+
     res.status(200).send({
       success: true,
       message: "Login successfully",
@@ -144,7 +149,12 @@ export const forgotPasswordController = async (req, res) => {
     }
     if (!newPassword) {
       return res.status(200).send({ message: "New Password is required" });
+    } else if (newPassword.length < 6) {
+      return res
+        .status(200)
+        .send({ message: "New Password must be at least 6 characters" });
     }
+
     //check
     const user = await userModel.findOne({ email, answer });
     //validation
@@ -203,6 +213,13 @@ export const updateProfileController = async (req, res) => {
       });
     }
 
+    if (phone && !phoneRegex.test(phone)) {
+      return res.status(200).json({
+        error:
+          "Oops! Please enter a valid phone number in the format: +[country code] [8–12 digits]",
+      });
+    }
+
     const hashedNewPassword = newPassword
       ? await hashPassword(newPassword)
       : undefined;
@@ -256,7 +273,7 @@ export const getAllOrdersController = async (req, res) => {
       .find({})
       .populate("products", "-photo")
       .populate("buyer", "name")
-      .sort({ createdAt: "-1" });
+      .sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
     console.log(error);
