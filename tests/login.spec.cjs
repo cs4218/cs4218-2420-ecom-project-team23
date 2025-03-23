@@ -14,7 +14,7 @@ test.describe("Routing and Logging In", () => {
     await page.getByRole("button", { name: "LOGIN" }).click();
     await page.waitForURL("http://localhost:3000/");
 
-    const loginUserName = page.getByRole("button", { name: "john doe" });
+    const loginUserName = page.getByRole("button", { name: "John Doe" });
     await expect(loginUserName).toBeVisible();
   });
 
@@ -23,7 +23,7 @@ test.describe("Routing and Logging In", () => {
 
     await page.getByRole("button", { name: "LOGIN" }).click();
     await page.waitForURL("http://localhost:3000/");
-    await page.getByRole("button", { name: "john doe" }).click();
+    await page.getByRole("button", { name: "John Doe" }).click();
     await page.getByRole("link", { name: "Logout" }).click();
     await page.waitForURL("http://localhost:3000/login");
 

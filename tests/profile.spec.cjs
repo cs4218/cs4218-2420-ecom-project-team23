@@ -24,7 +24,7 @@ test("should display initial update profile form data", async ({ page }) => {
   await expect(formHeader).toBeVisible();
 
   await expect(nameInput).toBeVisible();
-  await expect(nameInput).toHaveValue("john doe");
+  await expect(nameInput).toHaveValue("John Doe");
 
   await expect(emailInput).toBeVisible();
   await expect(emailInput).toBeDisabled();
@@ -136,7 +136,7 @@ async function login(page) {
 }
 
 async function navigateToProfilePage(page) {
-  await page.getByRole("button", { name: "john doe" }).click();
+  await page.getByRole("button", { name: "John Doe" }).click();
   await page.getByRole("link", { name: "Dashboard" }).click();
   await page.waitForURL("http://localhost:3000/dashboard/user");
 
