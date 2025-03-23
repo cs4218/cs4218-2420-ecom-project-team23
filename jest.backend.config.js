@@ -6,7 +6,14 @@ module.exports = {
   testEnvironment: "node",
 
   // which test to run
-  testMatch: ["<rootDir>/controllers/*.test.js", "<rootDir>/models/*.test.js", "<rootDir>/config/*.test.js", "<rootDir>/middlewares/*.test.js", "<rootDir>/helpers/*.test.js"],
+  testMatch: [
+    "<rootDir>/controllers/*.test.js",
+    "<rootDir>/models/*.test.js",
+    "<rootDir>/config/*.test.js",
+    "<rootDir>/middlewares/*.test.js",
+    "<rootDir>/helpers/*.test.js",
+    "<rootDir>/utilities/*.test.js",
+  ],
 
   // to remove reference error
   transform: {
@@ -15,7 +22,16 @@ module.exports = {
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["controllers/**", "models/**", "config/db.js", "models/userModel.js", "middlewares/authMiddleware.js", "helpers/authHelper.js"],
+  coverageDirectory: "coverage/backend",
+  collectCoverageFrom: [
+    "controllers/**",
+    "models/**",
+    "config/db.js",
+    "models/userModel.js",
+    "middlewares/authMiddleware.js",
+    "helpers/authHelper.js",
+    "utilities/regexUtils.js",
+  ],
   coverageThreshold: {
     global: {
       lines: 0,
@@ -23,5 +39,3 @@ module.exports = {
     },
   },
 };
-
-

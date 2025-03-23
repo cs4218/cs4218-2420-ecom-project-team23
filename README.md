@@ -14,9 +14,39 @@ npm i
 
 ---
 
+## Running the Application
+
 To run the application: `npm run dev`
 
-To run tests:
+---
 
-1. Start the Application: `npm run dev`
-2. Run the tests: `npm run test`
+## Running the tests
+
+**To run frontend and backend tests:**
+
+1. Run frontend tests: `npm run test:frontend`
+2. Run backend tests: `npm run test:backend`
+
+**To run playwright UI tests:**
+
+1. Run the application: `npm run dev`
+2. Run UI test: `npm run test:ui`
+
+**To run all tests**
+
+1. Run the application: `npm run dev`
+2. Run all tests: `npm run test`
+
+---
+
+## Code Coverage (2%)
+
+**To run sonarqube:**
+
+1. Generate test coverage report for frontend and backend
+   - Run frontend tests: `npm run test:frontend`
+   - Run backend tests: `npm run test:backend`
+2. Start sonarqube: `<sonarqube_dir>/<bin>/<your_os_sys>/sonar.sh start`
+3. Update `sonar-project.properties` with your created user token
+   - `sonar.token = <your_generated_token>`
+4. Run sonar-scanner: `npm run sonarqube`
