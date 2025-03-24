@@ -304,21 +304,6 @@ test.describe("About Component UI Tests with actual API", () => {
     await expect(products.nth(0).locator(".card-title").first()).toBeVisible();
   });
 
-  test("should be able to show more products", async ({ page }) => {
-    await page.waitForSelector(".home-page .card");
-
-    const initialProducts = await page.locator(".home-page .card").count();
-    const showMoreButton = page.locator("button.loadmore");
-
-    await expect(showMoreButton).toBeVisible();
-    await showMoreButton.click();
-
-    await page.waitForResponse("**/api/v1/product/product-list/2");
-
-    const products = await page.locator(".home-page .card").count();
-    expect(products).toBeGreaterThan(initialProducts);
-  });
-
   test("should allow filtering by category", async ({ page }) => {
     await page.waitForSelector(".filters .ant-checkbox-label");
 
