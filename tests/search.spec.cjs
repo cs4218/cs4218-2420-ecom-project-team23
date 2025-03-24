@@ -25,7 +25,7 @@ test.describe("Search Page", () => {
   test("should show results when searching for created product", async ({
     page,
   }) => {
-    await page.goto("http://localhost:3000");
+    await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
     await page.getByPlaceholder("Search").fill(productName);
     await page.getByRole("button", { name: "Search" }).click();
     await page.waitForURL("**/search");
@@ -37,7 +37,7 @@ test.describe("Search Page", () => {
   test("should show no products found when there are no results", async ({
     page,
   }) => {
-    await page.goto("http://localhost:3000");
+    await page.goto("http://localhost:3000", {waitUntil: "domcontentloaded"});
     await page.getByPlaceholder("Search").fill("nonexistent-product-keyword");
     await page.getByRole("button", { name: "Search" }).click();
     await page.waitForURL("**/search");

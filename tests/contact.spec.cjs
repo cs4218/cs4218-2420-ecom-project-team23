@@ -2,7 +2,7 @@
 const { test, expect } = require("@playwright/test");
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:3000/");
+  await page.goto("http://localhost:3000/", {waitUntil: "domcontentloaded"});
 });
 
 test("should navigate to contact on click", async ({ page }) => {
